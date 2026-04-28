@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pleaides AI — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cream:#f5f2ec;--ink:#1c1c1a;--ink-light:#5c5c58;--ink-faint:#a8a8a3;
+  --rule:#ddd9d0;--surface:#fff;
+  --green:#1a6b4a;--green-light:#e6f2ec;--green-mid:#2d8f62;
+  --blue:#1a3d6b;--blue-light:#e8eef6;
+  --amber:#8a5200;--amber-light:#fdf0dc;
+  --accent:#c84b2f;
+  --sidebar:220px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;min-height:100vh;}
+
+/* ── LOGIN ── */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.login-card{background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:2.5rem;width:100%;max-width:400px;}
+.login-logo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink);margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--ink-faint);margin-bottom:2rem;}
+.login-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px;display:block;}
+.login-note{font-size:11px;color:var(--ink-faint);margin-bottom:1rem;font-style:italic;}
+.user-pills{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
+.user-pill{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;cursor:pointer;transition:all .15s;background:var(--surface);}
+.user-pill:hover{border-color:var(--ink);background:var(--cream);}
+.pill-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.av-admin{background:#eeedfe;color:#3c3489;}
+.av-respondent{background:#e1f5ee;color:#085041;}
+.av-team{background:#faeeda;color:#633806;}
+.pill-info{flex:1;}
+.pill-name{font-size:14px;font-weight:500;color:var(--ink);}
+.pill-role{font-size:11px;color:var(--ink-faint);}
+.role-badge{font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;}
+.rb-admin{background:#eeedfe;color:#3c3489;}
+.rb-respondent{background:#e1f5ee;color:#085041;}
+.rb-team{background:#faeeda;color:#633806;}
+
+/* ── APP SHELL ── */
+.app{display:none;min-height:100vh;}
+.app.active{display:flex;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--rule);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:10;}
+.sidebar-logo{font-family:'DM Serif Display',serif;font-size:16px;color:var(--ink);padding:20px 20px 0;}
+.sidebar-tagline{font-size:11px;color:var(--ink-faint);padding:2px 20px 20px;border-bottom:1px solid var(--rule);}
+.sidebar-nav{padding:12px 0;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--ink-light);cursor:pointer;transition:all .15s;border-left:2px solid transparent;}
+.nav-item:hover{background:var(--cream);color:var(--ink);}
+.nav-item.active{background:var(--cream);color:var(--ink);border-left-color:var(--ink);font-weight:500;}
+.nav-icon{width:16px;height:16px;opacity:.5;flex-shrink:0;}
+.nav-item.active .nav-icon{opacity:1;}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);padding:12px 20px 4px;}
+.sidebar-user{padding:16px 20px;border-top:1px solid var(--rule);}
+.sidebar-user-name{font-size:13px;font-weight:500;color:var(--ink);}
+.sidebar-user-role{font-size:11px;color:var(--ink-faint);}
+.signout-btn{font-size:12px;color:var(--ink-faint);cursor:pointer;margin-top:6px;background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;text-decoration:underline;}
+.signout-btn:hover{color:var(--ink);}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;padding:2rem;max-width:calc(100vw - var(--sidebar));}
+.page{display:none;}
+.page.active{display:block;}
+.page-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--ink);margin-bottom:4px;}
+.page-sub{font-size:14px;color:var(--ink-faint);margin-bottom:2rem;}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:2rem;}
+.stat-card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:1rem 1.25rem;}
+.stat-label{font-size:11px;color:var(--ink-faint);margin-bottom:4px;}
+.stat-value{font-family:'DM Serif Display',serif;font-size:26px;color:var(--ink);}
+.stat-sub{font-size:11px;color:var(--ink-faint);margin-top:2px;}
+
+/* ── TABLE ── */
+.table-card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden;margin-bottom:1.5rem;}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--rule);}
+.table-title{font-size:14px;font-weight:500;color:var(--ink);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:9px 14px;text-align:left;font-size:11px;font-weight:500;color:var(--ink-faint);background:var(--cream);border-bottom:1px solid var(--rule);}
+tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid var(--rule);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{cursor:pointer;transition:background .1s;}
+tbody tr:hover td{background:#faf9f6;}
+.tier-pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+.tier-scale{background:var(--green-light);color:var(--green);}
+.tier-build{background:var(--blue-light);color:var(--blue);}
+.tier-launch{background:var(--amber-light);color:var(--amber);}
+.tier-nurture{background:var(--cream);color:var(--ink-faint);border:1px solid var(--rule);}
+
+/* ── SCORE BAR ── */
+.score-bar-wrap{display:flex;align-items:center;gap:8px;}
+.score-bar{height:4px;width:60px;background:var(--rule);border-radius:2px;overflow:hidden;}
+.score-bar-fill{height:100%;background:var(--ink);border-radius:2px;}
+.score-text{font-size:12px;color:var(--ink-faint);white-space:nowrap;}
+
+/* ── PROFILE CARD ── */
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-faint);cursor:pointer;margin-bottom:1.5rem;background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;}
+.back-btn:hover{color:var(--ink);}
+.profile-grid{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;}
+.profile-main{display:flex;flex-direction:column;gap:1rem;}
+.profile-sidebar-panel{display:flex;flex-direction:column;gap:1rem;}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:1.25rem;}
+.card-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;}
+.profile-header{display:flex;align-items:center;gap:14px;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--rule);}
+.profile-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0;}
+.profile-name{font-size:16px;font-weight:500;color:var(--ink);}
+.profile-meta{font-size:12px;color:var(--ink-faint);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.field-row.single{grid-template-columns:1fr;}
+.field-label{font-size:11px;color:var(--ink-faint);margin-bottom:3px;}
+.field-value{font-size:13px;color:var(--ink);}
+.field-value.editable{padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;width:100%;outline:none;}
+.field-value.editable:focus{border-color:var(--ink);}
+textarea.field-value.editable{resize:vertical;min-height:80px;}
+.dim-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--rule);}
+.dim-row:last-child{border-bottom:none;}
+.dim-name{font-size:13px;color:var(--ink-light);}
+.dim-score{font-size:13px;font-weight:500;color:var(--ink);}
+.dim-bar{height:3px;background:var(--rule);border-radius:2px;margin-top:4px;overflow:hidden;}
+.dim-fill{height:100%;background:var(--ink);border-radius:2px;}
+.step-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:13px;color:var(--ink-light);}
+.step-item:last-child{border-bottom:none;}
+.step-check{width:18px;height:18px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.save-btn{background:var(--ink);color:var(--cream);border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.save-btn:hover{background:#333;}
+.save-confirm{font-size:12px;color:var(--green);margin-left:10px;display:none;}
+.notes-area{width:100%;min-height:100px;resize:vertical;padding:10px;border:1px solid var(--rule);border-radius:8px;background:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;}
+.notes-area:focus{border-color:var(--ink);}
+.readonly-note{font-size:12px;color:var(--ink-faint);background:var(--cream);border-radius:8px;padding:8px 12px;margin-bottom:1rem;}
+
+/* ── MY DASHBOARD (respondent) ── */
+.my-tier-card{padding:1.5rem;border-radius:14px;margin-bottom:1rem;}
+.my-tier-scale{background:var(--green-light);border:1.5px solid var(--green-mid);}
+.my-tier-build{background:var(--blue-light);border:1.5px solid #3a6ea8;}
+.my-tier-launch{background:var(--amber-light);border:1.5px solid #c47a20;}
+.my-tier-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;}
+.my-tier-scale .my-tier-label{color:var(--green);}
+.my-tier-build .my-tier-label{color:var(--blue);}
+.my-tier-launch .my-tier-label{color:var(--amber);}
+.my-tier-name{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:6px;}
+.my-tier-scale .my-tier-name{color:var(--green);}
+.my-tier-build .my-tier-name{color:var(--blue);}
+.my-tier-launch .my-tier-name{color:var(--amber);}
+.my-tier-desc{font-size:13px;font-weight:300;line-height:1.6;}
+.my-tier-scale .my-tier-desc{color:var(--green);}
+.my-tier-build .my-tier-desc{color:var(--blue);}
+.my-tier-launch .my-tier-desc{color:var(--amber);}
+
+/* ── PERMISSION BADGE ── */
+.perm-note{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-faint);background:var(--cream);border-radius:8px;padding:8px 12px;margin-bottom:1.25rem;border:1px solid var(--rule);}
+.perm-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.perm-admin{background:var(--accent);}
+.perm-respondent{background:var(--green-mid);}
+.perm-team{background:#ba7517;}
+
+
+/* ── DOCUMENTS ── */
+.doc-upload-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.doc-select{padding:8px 12px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--surface);outline:none;cursor:pointer;}
+.doc-select:focus{border-color:var(--ink);}
+.doc-upload-btn{padding:8px 16px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.doc-upload-btn:hover{background:#333;}
+.doc-file-input{display:none;}
+.doc-list{display:flex;flex-direction:column;gap:6px;}
+.doc-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--cream);border:1px solid var(--rule);border-radius:8px;font-size:13px;}
+.doc-icon{width:30px;height:30px;border-radius:6px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-name{flex:1;font-weight:500;color:var(--ink);}
+.doc-type-tag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:var(--surface);border:1px solid var(--rule);color:var(--ink-faint);}
+.doc-meta{font-size:11px;color:var(--ink-faint);}
+.doc-del{font-size:11px;color:var(--ink-faint);cursor:pointer;padding:2px 6px;border-radius:4px;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.doc-del:hover{color:var(--accent);background:#fef2f0;}
+.doc-empty{font-size:13px;color:var(--ink-faint);padding:12px 0;}
+
+/* ── ACTIVITY LOG ── */
+.activity-list{display:flex;flex-direction:column;gap:0;}
+.activity-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--rule);font-size:12px;}
+.activity-item:last-child{border-bottom:none;}
+.activity-dot{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);flex-shrink:0;margin-top:4px;}
+.activity-dot.upload{background:var(--blue);}
+.activity-dot.edit{background:var(--green-mid);}
+.activity-dot.submit{background:var(--accent);}
+.activity-body{flex:1;line-height:1.5;}
+.activity-who{font-weight:500;color:var(--ink);}
+.activity-what{color:var(--ink-light);}
+.activity-when{color:var(--ink-faint);font-size:11px;white-space:nowrap;}
+
+/* ── COMPLIANCE GRID ── */
+.compliance-table{width:100%;border-collapse:collapse;font-size:13px;}
+.compliance-table thead th{padding:9px 14px;text-align:left;font-size:11px;font-weight:500;color:var(--ink-faint);background:var(--cream);border-bottom:1px solid var(--rule);white-space:nowrap;}
+.compliance-table tbody td{padding:10px 14px;border-bottom:1px solid var(--rule);vertical-align:middle;}
+.compliance-table tbody tr:last-child td{border-bottom:none;}
+.compliance-table tbody tr:hover td{background:#faf9f6;}
+.check-cell{text-align:center;}
+.check-yes{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--green-light);}
+.check-no{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#fef2f0;}
+.check-partial{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--amber-light);}
+.complete-bar-wrap{display:flex;align-items:center;gap:8px;}
+.complete-bar{height:6px;width:80px;background:var(--rule);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.complete-bar-fill{height:100%;border-radius:3px;transition:width .3s;}
+.complete-pct{font-size:12px;font-weight:500;color:var(--ink);}
+.missing-tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;background:#fef2f0;color:var(--accent);margin:2px 3px 2px 0;white-space:nowrap;}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.filter-btn{padding:6px 14px;border:1px solid var(--rule);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--ink-faint);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.filter-btn:hover{border-color:var(--ink);color:var(--ink);}
+.filter-btn.active{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.legend-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:1.25rem;font-size:12px;color:var(--ink-faint);}
+.legend-item{display:flex;align-items:center;gap:6px;}
+
+/* ── MARKETPLACE ── */
+.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:2rem;}
+.market-card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:all .2s;position:relative;}
+.market-card:hover{border-color:#b8b4ac;transform:translateY(-2px);}
+.market-card-top{padding:1.25rem 1.25rem 0.75rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;border-bottom:1px solid var(--rule);}
+.market-card-logo{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;flex-shrink:0;border:2px solid var(--rule);}
+.market-card-name{font-size:15px;font-weight:500;color:var(--ink);margin-top:2px;}
+.market-card-meta{font-size:12px;color:var(--ink-faint);}
+.market-card-status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.03em;}
+.status-approved{background:#e1f5ee;color:#085041;}
+.status-pending{background:#faeeda;color:#633806;}
+.status-registered{background:#e6f1fb;color:#0c447c;}
+.market-card-body{padding:0.75rem 1.25rem;flex:1;}
+.market-card-goal{font-size:12px;color:var(--ink-light);line-height:1.5;}
+.market-card-attrs{padding:0.75rem 1.25rem;border-top:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.market-attr{display:flex;flex-direction:column;gap:1px;}
+.market-attr-label{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;}
+.market-attr-value{font-size:12px;color:var(--ink);font-weight:500;}
+.market-card-footer{padding:0.75rem 1.25rem;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.market-card-stars{display:flex;align-items:center;gap:3px;}
+.market-card-rating{font-size:11px;color:var(--ink-faint);margin-left:2px;}
+.market-card-name{font-size:15px;font-weight:500;color:var(--ink);}
+.market-card-meta{font-size:12px;color:var(--ink-faint);}
+
+
+/* ── NOTES THREAD ── */
+.notes-thread{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.note-entry{background:var(--cream);border:1px solid var(--rule);border-radius:10px;padding:12px;}
+.note-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.note-who{font-size:12px;font-weight:500;color:var(--ink);}
+.note-role-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;margin-left:6px;}
+.note-when{font-size:11px;color:var(--ink-faint);}
+.note-body{font-size:13px;color:var(--ink-light);line-height:1.6;}
+.note-add-row{display:flex;flex-direction:column;gap:8px;}
+.note-add-textarea{width:100%;min-height:70px;resize:vertical;padding:10px;border:1px solid var(--rule);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;background:var(--surface);}
+.note-add-textarea:focus{border-color:var(--ink);}
+.note-add-footer{display:flex;align-items:center;gap:8px;}
+
+/* ── NEXT STEPS EDITOR ── */
+.next-steps-editor{display:flex;flex-direction:column;gap:8px;}
+.next-step-row{display:flex;align-items:center;gap:8px;}
+.next-step-select{flex:1;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--surface);outline:none;}
+.next-step-select:focus{border-color:var(--ink);}
+.next-step-custom{flex:1;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--surface);outline:none;display:none;}
+.next-step-custom.visible{display:block;}
+.next-step-remove{width:28px;height:28px;border-radius:50%;border:1px solid var(--rule);background:transparent;cursor:pointer;font-size:14px;color:var(--ink-faint);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.next-step-remove:hover{border-color:var(--accent);color:var(--accent);}
+.add-step-btn{font-size:12px;color:var(--blue);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;padding:4px 0;text-align:left;}
+.add-step-btn:hover{text-decoration:underline;}
+
+/* ── QUALIFIER ANSWERS ── */
+.qa-dim-block{margin-bottom:1.25rem;}
+.qa-dim-block:last-child{margin-bottom:0;}
+.qa-dim-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--rule);}
+.qa-dim-name{font-size:12px;font-weight:500;color:var(--ink);}
+.qa-dim-score{font-size:12px;font-weight:600;color:var(--ink);}
+.qa-dim-bar{height:3px;background:var(--rule);border-radius:2px;margin-bottom:8px;overflow:hidden;}
+.qa-dim-fill{height:100%;background:var(--ink);border-radius:2px;}
+.qa-item{display:flex;flex-direction:column;gap:3px;padding:7px 0;border-bottom:0.5px solid var(--rule);}
+.qa-item:last-child{border-bottom:none;}
+.qa-question{font-size:12px;color:var(--ink-faint);}
+.qa-answer{font-size:13px;color:var(--ink);font-weight:500;}
+.qa-score-pill{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;margin-left:6px;}
+.qa-s0{background:#fef2f0;color:#c84b2f;}
+.qa-s1{background:#faeeda;color:#633806;}
+.qa-s2{background:#e6f1fb;color:#0c447c;}
+.qa-s3{background:#e1f5ee;color:#085041;}
+
+/* ── COLLAPSIBLE SECTIONS ── */
+.collapsible-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:2px 0;}
+.collapsible-header:hover .collapse-icon{color:var(--ink);}
+.collapse-icon{font-size:12px;color:var(--ink-faint);transition:transform .2s;display:inline-block;}
+.collapse-icon.open{transform:rotate(180deg);}
+.collapsible-body{overflow:hidden;transition:max-height .3s ease, opacity .3s ease;max-height:2000px;opacity:1;}
+.collapsible-body.closed{max-height:0;opacity:0;}
+.dim-summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;}
+.dim-summary-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-light);}
+.dim-summary-score{font-weight:600;color:var(--ink);}
+
+/* ── SAVE BANNER ── */
+.save-banner{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.save-banner-info{font-size:12px;color:var(--ink-faint);line-height:1.6;}
+.save-banner-who{font-weight:500;color:var(--ink);}
+.save-banner-btn{padding:9px 22px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.save-banner-btn:hover{background:#333;}
+.save-banner-btn.saving{background:var(--green-mid);}
+
+/* ── GROUPS ── */
+.group-card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;overflow:hidden;margin-bottom:1rem;}
+.group-card-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--rule);cursor:pointer;}
+.group-card-header:hover{background:var(--cream);}
+.group-name{font-size:15px;font-weight:500;color:var(--ink);}
+.group-meta{font-size:12px;color:var(--ink-faint);margin-top:2px;}
+.group-count{font-size:12px;font-weight:500;color:var(--ink-faint);padding:3px 10px;background:var(--cream);border-radius:20px;border:1px solid var(--rule);}
+.group-members{padding:0.75rem 1.25rem;}
+.group-member-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--rule);}
+.group-member-row:last-child{border-bottom:none;}
+.group-member-name{font-size:13px;font-weight:500;color:var(--ink);flex:1;}
+.group-member-role{font-size:11px;color:var(--ink-faint);}
+.group-member-type{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;}
+.gmt-owner{background:#eeedfe;color:#3c3489;}
+.gmt-partner{background:#f0eeff;color:#3c3489;}
+.view-member-btn{font-size:12px;color:var(--blue);cursor:pointer;background:var(--blue-light);border:none;padding:4px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.create-group-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem;}
+.group-name-input{flex:1;min-width:180px;padding:9px 14px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;background:var(--surface);}
+.group-name-input:focus{border-color:var(--ink);}
+.create-group-btn{padding:9px 18px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.create-group-btn:hover{background:#333;}
+.group-banner{background:var(--green-light);border:1px solid var(--green-mid);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.no-group-msg{font-size:13px;color:var(--ink-faint);padding:1rem 0;}
+
+/* ── PROVIDER INVITE SECTION ── */
+.invite-section{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:1.25rem;margin-top:1rem;}
+.invite-section-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:4px;}
+.invite-section-sub{font-size:12px;color:var(--ink-faint);margin-bottom:1rem;}
+.invite-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem;}
+.invite-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px;}
+.invite-field-label{font-size:11px;font-weight:500;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;}
+.invite-select{padding:8px 12px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--surface);outline:none;cursor:pointer;}
+.invite-select:focus{border-color:var(--ink);}
+.invite-submit-btn{padding:9px 18px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;align-self:flex-end;}
+.invite-submit-btn:hover{background:#333;}
+.invited-provider-list{display:flex;flex-direction:column;gap:6px;}
+.invited-provider-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--cream);border:1px solid var(--rule);border-radius:8px;font-size:13px;}
+.invited-provider-info{flex:1;min-width:0;}
+.invited-provider-name{font-weight:500;color:var(--ink);}
+.invited-provider-meta{font-size:11px;color:var(--ink-faint);}
+.access-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.ab-profile{background:#e6f1fb;color:#0c447c;}
+.ab-group{background:#eeedfe;color:#3c3489;}
+.revoke-btn{font-size:11px;color:var(--ink-faint);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;white-space:nowrap;padding:2px 6px;border-radius:4px;}
+.revoke-btn:hover{color:var(--accent);background:#fef2f0;}
+.no-invited-msg{font-size:12px;color:var(--ink-faint);padding:4px 0;}
+/* ── TYPE FILTER PILLS ── */
+.type-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.type-pill{padding:5px 14px;border:1px solid var(--rule);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--ink-faint);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.type-pill:hover{color:var(--ink);border-color:#b8b4ac;}
+.type-pill.active{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+.type-pill.t1.active{background:#1a3d6b;border-color:#1a3d6b;}
+.type-pill.t2.active{background:#1a6b4a;border-color:#1a6b4a;}
+.type-pill.t3.active{background:#8a5200;border-color:#8a5200;}
+.type-badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;margin-top:4px;}
+.tb-1{background:#e8eef6;color:#1a3d6b;}
+.tb-2{background:#e6f2ec;color:#1a6b4a;}
+.tb-3{background:#fdf0dc;color:#8a5200;}
+
+/* ── PARTNERS & INVITES ── */
+.people-section{margin-bottom:1.5rem;}
+.people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:10px;}
+.person-card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;}
+.person-card.provider-card{border-color:#b5d4f4;}
+.person-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.person-name{font-size:13px;font-weight:500;color:var(--ink);}
+.person-role{font-size:11px;color:var(--ink-faint);}
+.person-type{font-size:10px;font-weight:500;padding:1px 6px;border-radius:8px;margin-top:2px;display:inline-block;}
+.pt-partner{background:#f0eeff;color:#3c3489;}
+.pt-provider{background:#e6f1fb;color:#0c447c;}
+.remove-person{margin-left:auto;font-size:11px;color:var(--ink-faint);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;flex-shrink:0;}
+.remove-person:hover{color:var(--accent);}
+.add-person-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.add-person-input{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;}
+.add-person-input:focus{border-color:var(--ink);}
+.add-person-btn{padding:8px 16px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.add-person-btn:hover{background:#333;}
+.section-divider{border:none;border-top:1px solid var(--rule);margin:1.5rem 0;}
+.empty-people{font-size:13px;color:var(--ink-faint);padding:8px 0;}
+
+/* attributes popup */
+.attr-popup-wrap{position:relative;display:inline-block;}
+.attr-popup-btn{width:22px;height:22px;border-radius:50%;border:1px solid var(--rule);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink-faint);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.attr-popup-btn:hover{border-color:var(--ink);color:var(--ink);}
+.attr-popup{display:none;position:absolute;bottom:28px;right:0;width:220px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+.attr-popup.open{display:block;}
+.attr-popup-title{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;}
+.attr-popup-row{display:flex;flex-direction:column;gap:1px;margin-bottom:7px;}
+.attr-popup-row:last-child{margin-bottom:0;}
+.attr-popup-key{font-size:11px;font-weight:500;color:var(--ink);}
+.attr-popup-val{font-size:11px;color:var(--ink-faint);}
+.view-profile-btn{font-size:12px;font-weight:500;color:var(--blue);cursor:pointer;background:var(--blue-light);border:none;padding:6px 14px;border-radius:20px;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.view-profile-btn:hover{background:#d4e4f5;}
+.fav-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--rule);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.fav-btn:hover{border-color:#e85d5d;background:#fff5f5;}
+.fav-btn.active{border-color:#e85d5d;background:#fff0f0;}
+.fav-heart{transition:all .15s;}
+.market-search{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;}
+.market-search-input{flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--rule);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;background:var(--surface);}
+.market-search-input:focus{border-color:var(--ink);}
+.market-tab-row{display:flex;gap:6px;margin-bottom:1.25rem;}
+.market-tab{padding:6px 16px;border:1px solid var(--rule);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--ink-faint);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.market-tab:hover{color:var(--ink);}
+.market-tab.active{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:2rem;}
+.modal-overlay.active{display:flex;}
+.modal-card{background:var(--surface);border-radius:16px;padding:2rem;max-width:580px;width:100%;max-height:85vh;overflow-y:auto;position:relative;}
+.modal-close{position:absolute;top:1rem;right:1rem;width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);background:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-faint);line-height:1;}
+.modal-close:hover{background:var(--rule);}
+.modal-header{display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--rule);}
+.modal-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0;}
+.modal-name{font-size:18px;font-weight:500;color:var(--ink);}
+.modal-meta{font-size:13px;color:var(--ink-faint);}
+.modal-section{margin-bottom:1rem;}
+.modal-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px;}
+.modal-value{font-size:14px;color:var(--ink-light);line-height:1.6;}
+.modal-fav-row{display:flex;align-items:center;justify-content:space-between;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--rule);}
+.modal-fav-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;border:1px solid var(--rule);background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.modal-fav-btn:hover{border-color:#e85d5d;background:#fff5f5;color:#e85d5d;}
+.modal-fav-btn.active{border-color:#e85d5d;background:#fff0f0;color:#e85d5d;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page.active{animation:fadeIn .25s ease;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Pleaides AI</div>
+    <div class="login-sub">Qualifier dashboard</div>
+    <span class="login-label">Sign in as</span>
+    <p class="login-note">Prototype — select a role to simulate login</p>
+    <div class="user-pills">
+      <div class="user-pill" onclick="login('admin')">
+        <div class="pill-avatar av-admin">LP</div>
+        <div class="pill-info">
+          <div class="pill-name">Linda Porzenheim</div>
+          <div class="pill-role">Pleaides AI</div>
+        </div>
+        <span class="role-badge rb-admin">Admin</span>
+      </div>
+      <div class="user-pill" onclick="login('respondent')">
+        <div class="pill-avatar av-respondent">JL</div>
+        <div class="pill-info">
+          <div class="pill-name">Jordan Lee</div>
+          <div class="pill-role">Greenfield Inc.</div>
+        </div>
+        <span class="role-badge rb-respondent">Respondent</span>
+      </div>
+      <div class="user-pill" onclick="login('team')">
+        <div class="pill-avatar av-team">MP</div>
+        <div class="pill-info">
+          <div class="pill-name">Maya Patel</div>
+          <div class="pill-role">Sample Co team</div>
+        </div>
+        <span class="role-badge rb-team">Service provider</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">Pleaides AI</div>
+    <div class="sidebar-tagline">Qualifier dashboard</div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-name" id="sidebar-name"></div>
+      <div class="sidebar-user-role" id="sidebar-role"></div>
+      <button class="signout-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ADMIN: All submissions -->
+    <div class="page" id="page-all-submissions">
+      <div class="perm-note"><span class="perm-dot perm-admin"></span>Admin view — you can see all submissions</div>
+      <div class="page-title">All submissions</div>
+      <div class="page-sub">Every prospect who has completed the qualifier</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Total submissions</div><div class="stat-value">4</div><div class="stat-sub">All time</div></div>
+        <div class="stat-card"><div class="stat-label">Tier 3 — Scale</div><div class="stat-value">2</div><div class="stat-sub">Avg score 22 / 24</div></div>
+        <div class="stat-card"><div class="stat-label">Tier 2 — Build</div><div class="stat-value">1</div><div class="stat-sub">Avg score 14 / 24</div></div>
+        <div class="stat-card"><div class="stat-label">Tier 1 — Launch</div><div class="stat-value">1</div><div class="stat-sub">Avg score 8 / 24</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title">Respondents</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Email</th><th>Tier</th><th>Score</th>
+              <th>Financial</th><th>IP / Brand</th><th>Demand</th><th>Execution</th>
+              <th>Selected steps</th><th>Submitted</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN: Compliance grid -->
+    <div class="page" id="page-compliance">
+      <div class="perm-note"><span class="perm-dot perm-admin"></span>Admin only — completeness overview for all respondents</div>
+      <div class="page-title">Completeness grid</div>
+      <div class="page-sub">At-a-glance view of what each respondent has and has not completed</div>
+      <div class="filter-row" id="compliance-filters">
+        <button class="filter-btn active" onclick="filterCompliance('all', this)">All respondents</button>
+        <button class="filter-btn" onclick="filterCompliance('incomplete', this)">Has missing items</button>
+        <button class="filter-btn" onclick="filterCompliance('complete', this)">Fully complete</button>
+      </div>
+      <div class="legend-row">
+        <div class="legend-item"><div class="check-yes"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#1a6b4a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div> Complete</div>
+        <div class="legend-item"><div class="check-no"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="#c84b2f" stroke-width="1.5" stroke-linecap="round"/></svg></div> Missing</div>
+        <div class="legend-item"><div class="check-partial"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="#8a5200" stroke-width="1.5" stroke-linecap="round"/></svg></div> Partial</div>
+      </div>
+      <div class="table-card">
+        <table class="compliance-table">
+          <thead>
+            <tr>
+              <th style="min-width:160px;">Respondent</th>
+              <th>Tier</th>
+              <th class="check-cell">Qualifier<br>completed</th>
+              <th class="check-cell">Business<br>goal</th>
+              <th class="check-cell">Next steps<br>selected</th>
+              <th class="check-cell">Doc Type 1</th>
+              <th class="check-cell">Doc Type 2</th>
+              <th class="check-cell">Doc Type 3</th>
+              <th class="check-cell">Notes<br>added</th>
+              <th style="min-width:120px;">Completeness</th>
+              <th style="min-width:160px;">Missing items</th>
+            </tr>
+          </thead>
+          <tbody id="compliance-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN: Individual profile -->
+    <div class="page" id="page-admin-profile">
+      <button class="back-btn" onclick="showPage('page-all-submissions')">&#8592; Back to all submissions</button>
+      <div class="perm-note"><span class="perm-dot perm-admin"></span>Admin view — read-only access to all profiles</div>
+      <div id="admin-profile-content"></div>
+    </div>
+
+    <!-- RESPONDENT: My dashboard -->
+    <div class="page" id="page-my-dashboard">
+      <div class="perm-note"><span class="perm-dot perm-respondent"></span>Your personal dashboard — only you and your Pleaides AI team can see this</div>
+      <div class="page-title">My dashboard</div>
+      <div class="page-sub">Your qualifier results and next steps</div>
+      <div id="respondent-content"></div>
+    </div>
+
+    <!-- ADMIN: Groups view -->
+    <div class="page" id="page-groups">
+      <div class="perm-note"><span class="perm-dot perm-admin"></span>Admin view — all family groups and their members</div>
+      <div class="page-title">Family groups</div>
+      <div class="page-sub">All respondent groups and their partner members</div>
+      <div style="margin-bottom:1rem;">
+        <div class="create-group-row">
+          <input type="text" class="group-name-input" id="admin-group-name-input" placeholder="New group name..." />
+          <button class="create-group-btn" onclick="adminCreateGroup()">+ Create group</button>
+        </div>
+      </div>
+      <div id="admin-groups-list"></div>
+    </div>
+
+    <!-- ADMIN: Group member profile -->
+    <div class="page" id="page-group-member-profile">
+      <button class="back-btn" onclick="showPage('page-groups')">&#8592; Back to groups</button>
+      <div class="perm-note"><span class="perm-dot perm-admin"></span>Admin view — full edit access</div>
+      <div id="group-member-profile-content"></div>
+    </div>
+
+    <!-- RESPONDENT: My group -->
+    <div class="page" id="page-my-group">
+      <div class="perm-note"><span class="perm-dot perm-respondent"></span>Group view — you can see all members, partners can only see their own profile</div>
+      <div class="page-title">My group</div>
+      <div class="page-sub" id="my-group-sub">Your family group and partner profiles</div>
+      <div id="my-group-content"></div>
+    </div>
+
+    <!-- RESPONDENT: View partner profile (read-only) -->
+    <div class="page" id="page-partner-readonly">
+      <button class="back-btn" onclick="showPage('page-my-group')">&#8592; Back to my group</button>
+      <div class="perm-note"><span class="perm-dot perm-respondent"></span>Read-only — partner profile</div>
+      <div id="partner-readonly-content"></div>
+    </div>
+
+    <!-- PARTNER: My own dashboard -->
+    <div class="page" id="page-partner-dashboard">
+      <div class="perm-note"><span class="perm-dot perm-team"></span>Your personal dashboard — edit your own information</div>
+      <div class="page-title">My dashboard</div>
+      <div class="page-sub">Your profile within the group</div>
+      <div id="partner-dashboard-content"></div>
+    </div>
+
+    <!-- TEAM: My profile (service provider) -->
+    <div class="page" id="page-team-profiles">
+      <div class="perm-note"><span class="perm-dot perm-team"></span>Service provider view — your profile as it appears in the marketplace</div>
+      <div class="page-title">My profile</div>
+      <div class="page-sub">This is what Respondents see when they view your profile in the marketplace</div>
+      <div id="team-profile-content"></div>
+    </div>
+
+    <!-- MARKETPLACE (Respondents + Admin) -->
+    <div class="page" id="page-marketplace">
+      <div class="perm-note"><span class="perm-dot perm-respondent"></span>Private marketplace — visible to logged-in Respondents only</div>
+      <div class="page-title">Service provider marketplace</div>
+      <div class="page-sub">Browse and favorite service providers matched to your needs</div>
+      <div class="market-search">
+        <input class="market-search-input" id="market-search-input" placeholder="Search by name, company, or keyword..." oninput="filterMarket()" />
+      </div>
+      <div class="type-filter-row">
+        <button class="type-pill active" id="tf-all" onclick="setTypeFilter('all',this)">All types</button>
+        <button class="type-pill t1"     id="tf-Type 1" onclick="setTypeFilter('Type 1',this)">Type 1 — Advisory & Consulting</button>
+        <button class="type-pill t2"     id="tf-Type 2" onclick="setTypeFilter('Type 2',this)">Type 2 — Financial Services</button>
+        <button class="type-pill t3"     id="tf-Type 3" onclick="setTypeFilter('Type 3',this)">Type 3 — Creative & Marketing</button>
+      </div>
+      <div class="market-tab-row">
+        <button class="market-tab active" id="tab-all"       onclick="setMarketTab('all',this)">All providers</button>
+        <button class="market-tab"        id="tab-favorites" onclick="setMarketTab('favorites',this)">My favorites</button>
+      </div>
+      <div class="market-grid" id="market-grid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-card" id="modal-card">
+    <button class="modal-close" onclick="closeModalDirect()">&#x2715;</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+// Service providers (formerly "team members") — visible in the marketplace
+const serviceProviders = [
+  { id:101, name:'Maya Patel',      company:'Catalyst Advisory',   role:'Strategy Consultant',  initials:'MP', avClass:'av-team',
+    city:'Austin, TX', status:'Approved', statusClass:'status-approved', rating:4.8, reviewCount:12,
+    providerType:'Type 1', typeLabel:'Advisory & Consulting',
+    businessGoal:'I help B2B founders design scalable go-to-market systems and turn their expertise into licensable IP.',
+    tags:['Strategy','GTM','B2B'], email:'maya@catalyst.co', submitted:'Apr 7, 2026',
+    attrs:[{k:'Engagement type',v:'Retainer & project'},{k:'Availability',v:'Part-time'},{k:'Industry focus',v:'B2B SaaS'},{k:'Min. engagement',v:'$5,000'}] },
+  { id:102, name:'Chris Okafor',    company:'Okafor Legal Group',  role:'Attorney',              initials:'CO', avClass:'av-admin',
+    city:'New York, NY', status:'Approved', statusClass:'status-approved', rating:4.9, reviewCount:8,
+    providerType:'Type 1', typeLabel:'Advisory & Consulting',
+    businessGoal:'Specializing in marketplace contracts, IP licensing, and founder exit strategy for service businesses.',
+    tags:['Legal','IP','Exits'], email:'chris@okaforlegal.com', submitted:'Apr 8, 2026',
+    attrs:[{k:'Practice area',v:'Commercial law'},{k:'Availability',v:'Full-time'},{k:'Bar admission',v:'NY, CA'},{k:'Min. engagement',v:'$2,500'}] },
+  { id:103, name:'Priya Nair',      company:'Nair Financial',      role:'Financial Advisor',     initials:'PN', avClass:'av-respondent',
+    city:'Chicago, IL', status:'Registered', statusClass:'status-registered', rating:4.6, reviewCount:5,
+    providerType:'Type 2', typeLabel:'Financial Services',
+    businessGoal:'I help high-earning solopreneurs structure their finances for scalability and a clean exit event.',
+    tags:['Finance','Tax','Exit planning'], email:'priya@nairfinancial.com', submitted:'Apr 9, 2026',
+    attrs:[{k:'Specialization',v:'Exit planning'},{k:'Availability',v:'Part-time'},{k:'AUM focus',v:'$500k–$5M'},{k:'Min. engagement',v:'$3,000'}] },
+  { id:104, name:'Diego Santos',    company:'BuildStack',           role:'Technical Architect',   initials:'DS', avClass:'av-admin',
+    city:'Miami, FL', status:'Pending', statusClass:'status-pending', rating:4.7, reviewCount:3,
+    providerType:'Type 2', typeLabel:'Financial Services',
+    businessGoal:'Full-stack marketplace architect with 10+ years building two-sided service platforms at scale.',
+    tags:['Tech','Platforms','API'], email:'diego@buildstack.io', submitted:'Apr 10, 2026',
+    attrs:[{k:'Stack',v:'Next.js / Supabase'},{k:'Availability',v:'Full-time'},{k:'Specialty',v:'Marketplaces'},{k:'Min. engagement',v:'$8,000'}] },
+  { id:105, name:'Keisha Williams', company:'Williams Creative Co', role:'Brand Strategist',      initials:'KW', avClass:'av-team',
+    city:'Atlanta, GA', status:'Approved', statusClass:'status-approved', rating:4.5, reviewCount:7,
+    providerType:'Type 3', typeLabel:'Creative & Marketing',
+    businessGoal:'I transform expert-led businesses into recognizable brands with loyal audiences and scalable content systems.',
+    tags:['Branding','Content','Marketing'], email:'keisha@williamscreative.co', submitted:'Apr 12, 2026',
+    attrs:[{k:'Specialty',v:'Brand identity'},{k:'Availability',v:'Project-based'},{k:'Audience size',v:'45k followers'},{k:'Min. engagement',v:'$4,000'}] },
+  { id:106, name:'Tomás Rivera',    company:'Rivera Ops Group',     role:'Operations Consultant', initials:'TR', avClass:'av-respondent',
+    city:'Phoenix, AZ', status:'Registered', statusClass:'status-registered', rating:4.8, reviewCount:9,
+    providerType:'Type 3', typeLabel:'Creative & Marketing',
+    businessGoal:'I help service businesses systematize their operations so the founder can step back without revenue dropping.',
+    tags:['Operations','Systems','Scale'], email:'tomas@riveraops.com', submitted:'Apr 13, 2026',
+    attrs:[{k:'Focus',v:'Process design'},{k:'Availability',v:'Full-time'},{k:'Typical client',v:'$200k–$1M rev'},{k:'Min. engagement',v:'$6,000'}] },
+];
+
+let favorites = new Set(); // respondent favorites (by provider id)
+let marketTab = 'all';
+let marketSearch = '';
+let currentModalId = null;
+
+// ── GROUP / FAMILY DATA ──
+const groups = [
+  {
+    id: 'grp-1',
+    name: 'Greenfield Group',
+    createdBy: 'Jordan Lee',
+    createdRole: 'Respondent',
+    created: 'Apr 8, 2026',
+    members: [
+      { profileId: 1,   name: 'Jordan Lee',   role: 'Respondent', type: 'owner',   initials: 'JL', avClass: 'av-respondent' },
+      { profileId: 201, name: 'Casey Morgan',  role: 'Partner',    type: 'partner', initials: 'CM', avClass: 'av-team' },
+      { profileId: 202, name: 'Robin Vasquez', role: 'Partner',    type: 'partner', initials: 'RV', avClass: 'av-respondent' },
+    ]
+  }
+];
+
+// Partner profiles — same fields as respondents, own data
+const partnerProfiles = [
+  {
+    id: 201, name: 'Casey Morgan', email: 'casey@greenfield.com',
+    company: 'Greenfield Inc.', role: 'COO',
+    tier: 'Tier 2 — Build', tierClass: 'tier-build', myTierClass: 'my-tier-build',
+    score: 15, initials: 'CM', avClass: 'av-team',
+    businessGoal: 'Streamline internal operations and help Greenfield expand its service delivery capacity.',
+    selectedSteps: 'Book a 2-hour discovery call | Get a full platform build proposal',
+    notes: '', submitted: 'Apr 8, 2026',
+    dims:[{l:'Financial readiness',s:4,max:6},{l:'IP & brand strength',s:4,max:6},{l:'Market demand',s:4,max:6},{l:'Execution readiness',s:3,max:6}],
+    qa:[
+      { dim:'Financial readiness', questions:[
+        { q:'What is your current annual revenue?', a:'$250k – $500k', score:2 },
+        { q:'Are you at or near your revenue ceiling?', a:'Yes — fully booked, turning away clients', score:2 }
+      ]},
+      { dim:'IP & brand strength', questions:[
+        { q:'How strong is your personal brand or reputation?', a:'Regional reputation or online following', score:2 },
+        { q:'Do you have a repeatable method, system, or process?', a:'Partial — some frameworks or templates exist', score:2 }
+      ]},
+      { dim:'Market demand', questions:[
+        { q:'Is there more demand for your services than you can handle?', a:'Yes — I regularly turn away or delay clients', score:2 },
+        { q:'What is your exit or scale ambition?', a:'I want to scale and eventually step back', score:2 }
+      ]},
+      { dim:'Execution readiness', questions:[
+        { q:'How tech-savvy or operationally organised are you?', a:'Moderate — some CRM, scheduling, or automation', score:2 },
+        { q:'What investment range feels right for building your platform?', a:'$10k – $30k — open to a focused engagement', score:1 }
+      ]}
+    ]
+  },
+  {
+    id: 202, name: 'Robin Vasquez', email: 'robin@greenfield.com',
+    company: 'Greenfield Inc.', role: 'VP Sales',
+    tier: 'Tier 1 — Launch', tierClass: 'tier-launch', myTierClass: 'my-tier-launch',
+    score: 10, initials: 'RV', avClass: 'av-respondent',
+    businessGoal: 'Build a scalable sales system that does not depend on my personal relationships.',
+    selectedSteps: 'Book a paid discovery sprint ($2k-$5k)',
+    notes: '', submitted: 'Apr 9, 2026',
+    dims:[{l:'Financial readiness',s:3,max:6},{l:'IP & brand strength',s:2,max:6},{l:'Market demand',s:3,max:6},{l:'Execution readiness',s:2,max:6}],
+    qa:[
+      { dim:'Financial readiness', questions:[
+        { q:'What is your current annual revenue?', a:'$100k – $250k', score:2 },
+        { q:'Are you at or near your revenue ceiling?', a:'Somewhat — my growth has slowed', score:1 }
+      ]},
+      { dim:'IP & brand strength', questions:[
+        { q:'How strong is your personal brand or reputation?', a:'Known locally or within a niche', score:1 },
+        { q:'Do you have a repeatable method, system, or process?', a:'Informal — similar things but not documented', score:1 }
+      ]},
+      { dim:'Market demand', questions:[
+        { q:'Is there more demand for your services than you can handle?', a:'Yes — I regularly turn away or delay clients', score:2 },
+        { q:'What is your exit or scale ambition?', a:'I want to grow but have not thought about exit', score:1 }
+      ]},
+      { dim:'Execution readiness', questions:[
+        { q:'How tech-savvy or operationally organised are you?', a:'Basic — I use common tools but nothing systematic', score:1 },
+        { q:'What investment range feels right for building your platform?', a:'Under $10k — want to test before committing', score:1 }
+      ]}
+    ]
+  }
+];
+
+// Helper: find profile by id across submissions + partnerProfiles
+function findProfile(id) {
+  return submissions.find(s => s.id === id) || partnerProfiles.find(p => p.id === id);
+}
+
+// Helper: find which group a profile belongs to
+function findGroup(profileId) {
+  return groups.find(g => g.members.some(m => m.profileId === profileId));
+}
+
+// Invited service providers per profile/group
+// Structure: { profileId_or_groupId: [ { providerId, accessScope:'profile'|'group' } ] }
+const providerInvites = {
+  1: [ { providerId: 103, accessScope: 'profile' } ] // Jordan has already invited Priya
+};
+
+function getProviderInvites(scopeKey) {
+  return providerInvites[scopeKey] || [];
+}
+
+function inviteProvider(scopeKey, providerId, accessScope) {
+  if (!providerInvites[scopeKey]) providerInvites[scopeKey] = [];
+  // Prevent duplicates
+  if (providerInvites[scopeKey].some(i => i.providerId === providerId)) return false;
+  providerInvites[scopeKey].push({ providerId: parseInt(providerId), accessScope });
+  return true;
+}
+
+function revokeProviderInvite(scopeKey, providerId) {
+  if (!providerInvites[scopeKey]) return;
+  providerInvites[scopeKey] = providerInvites[scopeKey].filter(i => i.providerId !== parseInt(providerId));
+}
+
+function buildProviderInviteSection(scopeKey, groupName, canInviteGroup) {
+  const invites = getProviderInvites(scopeKey);
+  const providerOptions = serviceProviders
+    .map(p => '<option value="' + p.id + '">' + p.name + ' — ' + p.role + ' (' + p.company + ')</option>')
+    .join('');
+
+  const inviteList = invites.length === 0
+    ? '<div class="no-invited-msg">No service providers invited yet.</div>'
+    : invites.map(inv => {
+        const p = serviceProviders.find(x => x.id === inv.providerId);
+        if (!p) return '';
+        return '<div class="invited-provider-row">' +
+          '<div class="pill-avatar ' + p.avClass + '" style="width:30px;height:30px;font-size:11px;">' + p.initials + '</div>' +
+          '<div class="invited-provider-info">' +
+            '<div class="invited-provider-name">' + p.name + '</div>' +
+            '<div class="invited-provider-meta">' + p.role + ' · ' + p.company + '</div>' +
+          '</div>' +
+          '<span class="access-badge ' + (inv.accessScope==='group'?'ab-group':'ab-profile') + '">' +
+            (inv.accessScope==='group' ? 'Group access' : 'Profile only') +
+          '</span>' +
+          '<button class="revoke-btn" onclick="revokeAndRefresh(' + JSON.stringify(scopeKey) + ',' + p.id + ')">Revoke</button>' +
+        '</div>';
+      }).join('');
+
+  return '<div class="invite-section">' +
+    '<div class="invite-section-title">Invite a service provider</div>' +
+    '<div class="invite-section-sub">Select a provider from the marketplace and choose what they can access.</div>' +
+    '<div class="invite-controls">' +
+      '<div class="invite-field">' +
+        '<span class="invite-field-label">Service provider</span>' +
+        '<select class="invite-select" id="provider-select-' + scopeKey + '">' +
+          '<option value="">Select a provider...</option>' +
+          providerOptions +
+        '</select>' +
+      '</div>' +
+      '<div class="invite-field" style="max-width:200px;">' +
+        '<span class="invite-field-label">Access scope</span>' +
+        '<select class="invite-select" id="access-select-' + scopeKey + '">' +
+          '<option value="profile">My profile only</option>' +
+          (canInviteGroup ? '<option value="group">Whole group (' + groupName + ')</option>' : '') +
+        '</select>' +
+      '</div>' +
+      '<button class="invite-submit-btn" onclick="submitProviderInvite(' + JSON.stringify(scopeKey) + ')">Send invite</button>' +
+    '</div>' +
+    '<div class="invited-provider-list" id="invite-list-' + scopeKey + '">' + inviteList + '</div>' +
+  '</div>';
+}
+
+function submitProviderInvite(scopeKey) {
+  const provSel = document.getElementById('provider-select-' + scopeKey);
+  const accSel  = document.getElementById('access-select-' + scopeKey);
+  if (!provSel || !provSel.value) { if (provSel) provSel.focus(); return; }
+  const providerId  = parseInt(provSel.value);
+  const accessScope = accSel ? accSel.value : 'profile';
+  const success = inviteProvider(scopeKey, providerId, accessScope);
+  if (!success) {
+    alert('This provider has already been invited.');
+    return;
+  }
+  // Re-render just the invite list
+  const listEl = document.getElementById('invite-list-' + scopeKey);
+  const myGroup = groups.find(g => g.members.some(m => m.profileId === 1));
+  const groupName = myGroup ? myGroup.name : '';
+  if (listEl) {
+    const invites = getProviderInvites(scopeKey);
+    listEl.innerHTML = invites.length === 0
+      ? '<div class="no-invited-msg">No service providers invited yet.</div>'
+      : invites.map(inv => {
+          const p = serviceProviders.find(x => x.id === inv.providerId);
+          if (!p) return '';
+          return '<div class="invited-provider-row">' +
+            '<div class="pill-avatar ' + p.avClass + '" style="width:30px;height:30px;font-size:11px;">' + p.initials + '</div>' +
+            '<div class="invited-provider-info">' +
+              '<div class="invited-provider-name">' + p.name + '</div>' +
+              '<div class="invited-provider-meta">' + p.role + ' · ' + p.company + '</div>' +
+            '</div>' +
+            '<span class="access-badge ' + (inv.accessScope==='group'?'ab-group':'ab-profile') + '">' +
+              (inv.accessScope==='group' ? 'Group access' : 'Profile only') +
+            '</span>' +
+            '<button class="revoke-btn" onclick="revokeAndRefresh(' + JSON.stringify(scopeKey) + ',' + p.id + ')">Revoke</button>' +
+          '</div>';
+        }).join('');
+  }
+  provSel.value = '';
+}
+
+function revokeAndRefresh(scopeKey, providerId) {
+  revokeProviderInvite(scopeKey, providerId);
+  submitProviderInvite.__refreshOnly = true;
+  // Re-render list
+  const listEl = document.getElementById('invite-list-' + scopeKey);
+  if (listEl) {
+    const invites = getProviderInvites(scopeKey);
+    listEl.innerHTML = invites.length === 0
+      ? '<div class="no-invited-msg">No service providers invited yet.</div>'
+      : invites.map(inv => {
+          const p = serviceProviders.find(x => x.id === inv.providerId);
+          if (!p) return '';
+          return '<div class="invited-provider-row">' +
+            '<div class="pill-avatar ' + p.avClass + '" style="width:30px;height:30px;font-size:11px;">' + p.initials + '</div>' +
+            '<div class="invited-provider-info">' +
+              '<div class="invited-provider-name">' + p.name + '</div>' +
+              '<div class="invited-provider-meta">' + p.role + ' · ' + p.company + '</div>' +
+            '</div>' +
+            '<span class="access-badge ' + (inv.accessScope==='group'?'ab-group':'ab-profile') + '">' +
+              (inv.accessScope==='group' ? 'Group access' : 'Profile only') +
+            '</span>' +
+            '<button class="revoke-btn" onclick="revokeAndRefresh(' + JSON.stringify(scopeKey) + ',' + p.id + ')">Revoke</button>' +
+          '</div>';
+        }).join('');
+  }
+}
+
+const submissions = [
+  {
+    id:1, name:'Jordan Lee', email:'jordan@greenfield.com', company:'Greenfield Inc.', role:'Founder',
+    tier:'Tier 3 — Scale', tierClass:'tier-scale', myTierClass:'my-tier-scale',
+    score:22, dims:[{l:'Financial readiness',s:6,max:6},{l:'IP & brand strength',s:5,max:6},{l:'Market demand',s:6,max:6},{l:'Execution readiness',s:5,max:6}],
+    businessGoal:'Expand market reach in Q3 by targeting mid-market B2B customers through a new outbound marketplace.',
+    selectedSteps:'Book a 90-minute discovery workshop | Receive a Marketplace Configuration Document',
+    notes:'Following up after our intro call. Very motivated, has a clear vision.',
+    submitted:'Apr 7, 2026', initials:'JL', avClass:'av-respondent',
+    desc:'You are strong across all four dimensions. Ready for a full platform engagement — the conversation starts with a retainer.',
+    qa:[
+      { dim:'Financial readiness', questions:[
+        { q:'What is your current annual revenue?', a:'Over $500k', score:3 },
+        { q:'Are you at or near your revenue ceiling?', a:'Yes — and I have a waitlist', score:3 }
+      ]},
+      { dim:'IP & brand strength', questions:[
+        { q:'How strong is your personal brand or reputation?', a:'Clear authority — audience, referrals, inbound leads', score:3 },
+        { q:'Do you have a repeatable method, system, or process?', a:'Partial — some frameworks or templates exist', score:2 }
+      ]},
+      { dim:'Market demand', questions:[
+        { q:'Is there more demand for your services than you can handle?', a:'Yes — I have a waitlist or referral overflow', score:3 },
+        { q:'What is your exit or scale ambition?', a:'I want to build something I can sell', score:3 }
+      ]},
+      { dim:'Execution readiness', questions:[
+        { q:'How tech-savvy or operationally organised are you?', a:'High — already thinking about systems and scale', score:3 },
+        { q:'What investment range feels right for building your platform?', a:'$75k+ — want a long-term platform partner', score:2 }
+      ]}
+    ]
+  },
+  {
+    id:2, name:'Sam Torres', email:'sam@bluewave.io', company:'Bluewave', role:'COO',
+    tier:'Tier 3 — Scale', tierClass:'tier-scale', myTierClass:'my-tier-scale',
+    score:21, dims:[{l:'Financial readiness',s:6,max:6},{l:'IP & brand strength',s:6,max:6},{l:'Market demand',s:5,max:6},{l:'Execution readiness',s:4,max:6}],
+    businessGoal:'Streamline onboarding flow to reduce time-to-value for new users and license the methodology.',
+    selectedSteps:'Book a 2-hour discovery call | Get a full platform build proposal',
+    notes:'',
+    submitted:'Apr 9, 2026', initials:'ST', avClass:'av-admin',
+    desc:'You are strong across all four dimensions. Ready for a full platform engagement.',
+    qa:[
+      { dim:'Financial readiness', questions:[
+        { q:'What is your current annual revenue?', a:'Over $500k', score:3 },
+        { q:'Are you at or near your revenue ceiling?', a:'Yes — fully booked, turning away clients', score:3 }
+      ]},
+      { dim:'IP & brand strength', questions:[
+        { q:'How strong is your personal brand or reputation?', a:'Clear authority — audience, referrals, inbound leads', score:3 },
+        { q:'Do you have a repeatable method, system, or process?', a:'Yes — a clear methodology I teach or could license', score:3 }
+      ]},
+      { dim:'Market demand', questions:[
+        { q:'Is there more demand for your services than you can handle?', a:'Yes — I regularly turn away or delay clients', score:2 },
+        { q:'What is your exit or scale ambition?', a:'I want to build something I can sell', score:3 }
+      ]},
+      { dim:'Execution readiness', questions:[
+        { q:'How tech-savvy or operationally organised are you?', a:'Moderate — some CRM, scheduling, or automation', score:2 },
+        { q:'What investment range feels right for building your platform?', a:'$30k – $75k — ready for a full build', score:2 }
+      ]}
+    ]
+  },
+  {
+    id:3, name:'Riley Chen', email:'riley@nextstep.co', company:'NextStep', role:'PM',
+    tier:'Tier 2 — Build', tierClass:'tier-build', myTierClass:'my-tier-build',
+    score:14, dims:[{l:'Financial readiness',s:4,max:6},{l:'IP & brand strength',s:3,max:6},{l:'Market demand',s:4,max:6},{l:'Execution readiness',s:3,max:6}],
+    businessGoal:'Improve NPS scores by 20% and create a scalable coaching platform.',
+    selectedSteps:'Book a 2-hour discovery call | Discuss which modules to activate first',
+    notes:'',
+    submitted:'Apr 10, 2026', initials:'RC', avClass:'av-team',
+    desc:'You have solid fundamentals with one or two gaps. Ready for a focused full-funnel build.',
+    qa:[
+      { dim:'Financial readiness', questions:[
+        { q:'What is your current annual revenue?', a:'$250k – $500k', score:2 },
+        { q:'Are you at or near your revenue ceiling?', a:'Somewhat — my growth has slowed', score:2 }
+      ]},
+      { dim:'IP & brand strength', questions:[
+        { q:'How strong is your personal brand or reputation?', a:'Regional reputation or online following', score:2 },
+        { q:'Do you have a repeatable method, system, or process?', a:'Informal — similar things but not documented', score:1 }
+      ]},
+      { dim:'Market demand', questions:[
+        { q:'Is there more demand for your services than you can handle?', a:'Yes — I regularly turn away or delay clients', score:2 },
+        { q:'What is your exit or scale ambition?', a:'I want to scale and eventually step back', score:2 }
+      ]},
+      { dim:'Execution readiness', questions:[
+        { q:'How tech-savvy or operationally organised are you?', a:'Moderate — some CRM, scheduling, or automation', score:2 },
+        { q:'What investment range feels right for building your platform?', a:'$10k – $30k — open to a focused engagement', score:1 }
+      ]}
+    ]
+  },
+  {
+    id:4, name:'Alex Kim', email:'alex@startup.io', company:'Startup.io', role:'CEO',
+    tier:'Tier 1 — Launch', tierClass:'tier-launch', myTierClass:'my-tier-launch',
+    score:8, dims:[{l:'Financial readiness',s:2,max:6},{l:'IP & brand strength',s:2,max:6},{l:'Market demand',s:2,max:6},{l:'Execution readiness',s:2,max:6}],
+    businessGoal:'Validate demand for a new marketplace concept before committing to a full build.',
+    selectedSteps:'Book a paid discovery sprint ($2k-$5k)',
+    notes:'',
+    submitted:'Apr 11, 2026', initials:'AK', avClass:'av-admin',
+    desc:'You have a good foundation but need validation first. We start with a low-risk discovery sprint.',
+    qa:[
+      { dim:'Financial readiness', questions:[
+        { q:'What is your current annual revenue?', a:'$100k – $250k', score:1 },
+        { q:'Are you at or near your revenue ceiling?', a:'Somewhat — my growth has slowed', score:1 }
+      ]},
+      { dim:'IP & brand strength', questions:[
+        { q:'How strong is your personal brand or reputation?', a:'Known locally or within a niche', score:1 },
+        { q:'Do you have a repeatable method, system, or process?', a:'Informal — similar things but not documented', score:1 }
+      ]},
+      { dim:'Market demand', questions:[
+        { q:'Is there more demand for your services than you can handle?', a:'Maybe — some inbound I cannot always take', score:1 },
+        { q:'What is your exit or scale ambition?', a:'I want to scale and eventually step back', score:1 }
+      ]},
+      { dim:'Execution readiness', questions:[
+        { q:'How tech-savvy or operationally organised are you?', a:'Basic — I use common tools but nothing systematic', score:1 },
+        { q:'What investment range feels right for building your platform?', a:'$10k – $30k — open to a focused engagement', score:1 }
+      ]}
+    ]
+  },
+];
+
+// Jordan Lee is the respondent user (id:1)
+// Maya Patel (team) has access to Jordan's profile only
+
+const roles = {
+  admin: {
+    name:'Linda Porzenheim', role:'Admin', badge:'rb-admin', avClass:'av-admin', initials:'LP',
+    nav:[
+      {id:'page-all-submissions', label:'All submissions',    icon:'M3 7h18M3 12h18M3 17h18'},
+      {id:'page-groups',          label:'Family groups',      icon:'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75'},
+      {id:'page-compliance',      label:'Completeness grid',  icon:'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'},
+      {id:'page-marketplace',     label:'Marketplace preview',icon:'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z'},
+    ]
+  },
+  respondent: {
+    name:'Jordan Lee', role:'Respondent', badge:'rb-respondent', avClass:'av-respondent', initials:'JL',
+    nav:[
+      {id:'page-my-dashboard', label:'My dashboard',  icon:'M12 2a10 10 0 100 20A10 10 0 0012 2z'},
+      {id:'page-my-group',     label:'My group',      icon:'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75'},
+      {id:'page-marketplace',  label:'Marketplace',   icon:'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z'},
+    ]
+  },
+  team: {
+    name:'Maya Patel', role:'Service provider', badge:'rb-team', avClass:'av-team', initials:'MP',
+    nav:[
+      {id:'page-team-profiles', label:'My profile', icon:'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z'},
+    ]
+  },
+  partner: {
+    name:'Casey Morgan', role:'Partner', badge:'rb-team', avClass:'av-team', initials:'CM',
+    nav:[
+      {id:'page-partner-dashboard', label:'My dashboard', icon:'M12 2a10 10 0 100 20A10 10 0 0012 2z'},
+    ]
+  }
+};
+
+let currentRole = null;
+
+function login(role) {
+  currentRole = role;
+  const u = roles[role];
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  document.getElementById('sidebar-name').textContent = u.name;
+  document.getElementById('sidebar-role').textContent = u.role;
+
+  // Build nav
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = u.nav.map(n => `
+    <div class="nav-item" id="nav-${n.id}" onclick="showPage('${n.id}')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="${n.icon}"/>
+      </svg>
+      ${n.label}
+    </div>`).join('');
+
+  // Show first page
+  if (role === 'admin') {
+    buildAdminTable();
+    buildComplianceGrid();
+    buildMarketplace();
+    buildAdminGroups();
+    showPage('page-all-submissions');
+  } else if (role === 'respondent') {
+    buildRespondentDashboard();
+    buildMarketplace();
+    buildMyGroup();
+    buildMyGroupInviteSection();
+    showPage('page-my-dashboard');
+  } else if (role === 'partner') {
+    buildPartnerDashboard();
+    showPage('page-partner-dashboard');
+  } else {
+    buildProviderProfile();
+    showPage('page-team-profiles');
+  }
+}
+
+function signOut() {
+  currentRole = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('active');
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const navItem = document.getElementById('nav-' + id);
+  if (navItem) navItem.classList.add('active');
+  // Wire page-specific renderers
+  if (id === 'page-my-group') {
+    buildMyGroup();
+    setTimeout(buildMyGroupInviteSection, 0);
+  }
+  if (id === 'page-groups') buildAdminGroups();
+}
+
+// ── ADMIN TABLE ──
+function buildAdminTable() {
+  const tbody = document.getElementById('admin-table-body');
+  tbody.innerHTML = submissions.map(s => `
+    <tr onclick="showAdminProfile(${s.id})">
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div class="pill-avatar ${s.avClass}" style="width:28px;height:28px;font-size:10px;">${s.initials}</div>
+        <div><div style="font-weight:500;">${s.name}</div><div style="font-size:11px;color:var(--ink-faint);">${s.company}</div></div>
+      </div></td>
+      <td style="color:var(--ink-faint);">${s.email}</td>
+      <td><span class="tier-pill ${s.tierClass}">${s.tier}</span></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:${Math.round(s.score/24*100)}%"></div></div><span class="score-text">${s.score}/24</span></div></td>
+      ${s.dims.map(d => `<td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:${Math.round(d.s/d.max*100)}%"></div></div><span class="score-text">${d.s}/${d.max}</span></div></td>`).join('')}
+      <td style="font-size:12px;color:var(--ink-faint);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.selectedSteps}</td>
+      <td style="color:var(--ink-faint);">${s.submitted}</td>
+    </tr>`).join('');
+}
+
+// ── ADMIN PROFILE ──
+function showAdminProfile(id) {
+  const s = submissions.find(x => x.id === id);
+  document.getElementById('admin-profile-content').innerHTML = buildProfileHTML(s, true);
+  showPage('page-admin-profile');
+  afterProfileRender(s.id, true);
+}
+
+// ── RESPONDENT DASHBOARD ──
+function buildRespondentDashboard() {
+  const s = submissions[0]; // Jordan Lee
+  const respId = s.id;
+  document.getElementById('respondent-content').innerHTML = `
+    <div class="my-tier-card ${s.myTierClass}">
+      <div class="my-tier-label">Your result</div>
+      <div class="my-tier-name">${s.tier}</div>
+      <div class="my-tier-desc">${s.desc}</div>
+      <div style="font-size:12px;font-weight:500;margin-top:10px;opacity:.7;color:inherit;">Score: ${s.score} / 24</div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-main">
+        ${buildProfileHTML(s, true)}
+      </div>
+      <div class="profile-sidebar-panel">
+        <div class="card">
+          <div class="card-label">Your scores</div>
+          ${s.dims.map(d => `
+            <div class="dim-row">
+              <div>
+                <div class="dim-name">${d.l}</div>
+                <div class="dim-bar"><div class="dim-fill" style="width:${Math.round(d.s/d.max*100)}%"></div></div>
+              </div>
+              <div class="dim-score">${d.s} / ${d.max}</div>
+            </div>`).join('')}
+        </div>
+        <div class="card">
+          <div class="card-label">Selected next steps</div>
+          ${s.selectedSteps.split(' | ').map(step => `
+            <div class="step-item">
+              <div class="step-check">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#1a6b4a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              ${step}
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-label" style="margin-bottom:12px;">My team — partners & providers</div>
+      <div class="people-section">
+        <div style="font-size:12px;font-weight:500;color:var(--ink);margin-bottom:8px;">Business partners <span style="font-size:11px;color:var(--ink-faint);font-weight:400;">(full dashboard access)</span></div>
+        <div class="people-grid" id="partner-list"></div>
+        <div class="add-person-row">
+          <input type="email" class="add-person-input" id="partner-email-input" placeholder="Partner email address..." />
+          <button class="add-person-btn" onclick="addPartner()">+ Add partner</button>
+        </div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="people-section">
+        <div style="font-size:12px;font-weight:500;color:var(--ink);margin-bottom:8px;">Invited Sample Co providers <span style="font-size:11px;color:var(--ink-faint);font-weight:400;">(see Marketplace to browse & invite)</span></div>
+        <div class="people-grid" id="invited-providers-list"></div>
+        <div id="no-providers-msg" class="empty-people">No providers invited yet. Browse the Marketplace and invite providers to your dashboard.</div>
+      </div>
+    </div>`;
+  afterProfileRender(respId, true);
+  renderPartners();
+  renderInvitedProviders();
+}
+
+// ── DOCUMENT & ACTIVITY STATE ──
+const docStore = {}; // keyed by profile id
+const activityLog = {}; // keyed by profile id
+const notesStore = {}; // keyed by profile id — array of {who, role, when, body}
+
+function initNotes(profileId, seedNotes) {
+  if (!notesStore[profileId]) {
+    notesStore[profileId] = seedNotes || [];
+  }
+}
+
+function renderNotes(profileId) {
+  const el = document.getElementById('notes-thread-' + profileId);
+  if (!el) return;
+  const notes = notesStore[profileId] || [];
+  el.innerHTML = notes.length === 0
+    ? '<div style="font-size:13px;color:var(--ink-faint);padding:4px 0;">No notes yet.</div>'
+    : notes.map((n,i) =>
+        '<div class="note-entry">' +
+          '<div class="note-meta">' +
+            '<div><span class="note-who">' + n.who + '</span>' +
+            '<span class="note-role-badge ' + (n.role==='Admin'?'rb-admin':n.role==='Respondent'?'rb-respondent':'rb-team') + '">' + n.role + '</span></div>' +
+            '<span class="note-when">' + n.date + ' · ' + n.time + '</span>' +
+          '</div>' +
+          '<div class="note-body">' + n.body + '</div>' +
+        '</div>'
+      ).join('');
+}
+
+function addNote(profileId) {
+  const ta = document.getElementById('note-input-' + profileId);
+  if (!ta || !ta.value.trim()) return;
+  const now = new Date();
+  const note = {
+    who:  currentUserName(),
+    role: currentUserRole(),
+    body: ta.value.trim(),
+    date: now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    time: now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+  };
+  if (!notesStore[profileId]) notesStore[profileId] = [];
+  notesStore[profileId].unshift(note);
+  logActivity(profileId,'edit',note.who,note.role,'Added a note');
+  renderNotes(profileId);
+  renderActivity(profileId);
+  ta.value = '';
+}
+
+// Next steps state per profile
+const nextStepsStore = {};
+const STEP_OPTIONS = [
+  'Book a 90-minute discovery workshop',
+  'Receive a Marketplace Configuration Document',
+  'Explore the Scale tier ($100k-$150k/year retainer)',
+  'Have Pleaides AI recruit first seller cohort',
+  'Book a 2-hour discovery call',
+  'See a live Sharetribe prototype',
+  'Get a full platform build proposal',
+  'Discuss which modules to activate first',
+  'Book a paid discovery sprint ($2k-$5k)',
+  'Get a Launch tier proposal ($15k-$25k)',
+  'Understand the milestone-based approach',
+  'Join the Pleaides AI quarterly insight series',
+  'Custom...'
+];
+
+function initNextSteps(profileId, stepsStr) {
+  if (!nextStepsStore[profileId]) {
+    nextStepsStore[profileId] = stepsStr ? stepsStr.split(' | ') : [];
+  }
+}
+
+function renderNextSteps(profileId, editable) {
+  const el = document.getElementById('next-steps-editor-' + profileId);
+  if (!el) return;
+  const steps = nextStepsStore[profileId] || [];
+  if (!editable) {
+    el.innerHTML = steps.length === 0
+      ? '<div style="font-size:13px;color:var(--ink-faint);">No next steps selected.</div>'
+      : steps.map(s =>
+          '<div class="step-item"><div class="step-check"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#1a6b4a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' + s + '</div>'
+        ).join('');
+    return;
+  }
+  const opts = STEP_OPTIONS.map(o => '<option value="' + o + '">' + o + '</option>').join('');
+  el.innerHTML = '<div class="next-steps-editor">' +
+    steps.map((s,i) => {
+      const isCustom = !STEP_OPTIONS.slice(0,-1).includes(s);
+      return '<div class="next-step-row">' +
+        '<select class="next-step-select" onchange="onStepChange(' + profileId + ',' + i + ',this)">' +
+          STEP_OPTIONS.map(o => '<option value="' + o + '"' + ((isCustom&&o==='Custom...')||o===s?' selected':'') + '>' + o + '</option>').join('') +
+        '</select>' +
+        '<input type="text" class="next-step-custom' + (isCustom?' visible':'') + '" placeholder="Describe the next step..." value="' + (isCustom?s:'') + '" oninput="onCustomStep(' + profileId + ',' + i + ',this)" />' +
+        '<button class="next-step-remove" onclick="removeStep(' + profileId + ',' + i + ')">&#x2715;</button>' +
+      '</div>';
+    }).join('') +
+    '<button class="add-step-btn" onclick="addStep(' + profileId + ')">+ Add next step</button>' +
+  '</div>';
+}
+
+function onStepChange(profileId, idx, sel) {
+  const custom = sel.parentElement.querySelector('.next-step-custom');
+  if (sel.value === 'Custom...') {
+    custom.classList.add('visible');
+    nextStepsStore[profileId][idx] = custom.value || '';
+  } else {
+    custom.classList.remove('visible');
+    nextStepsStore[profileId][idx] = sel.value;
+  }
+}
+
+function onCustomStep(profileId, idx, input) {
+  nextStepsStore[profileId][idx] = input.value;
+}
+
+function addStep(profileId) {
+  if (!nextStepsStore[profileId]) nextStepsStore[profileId] = [];
+  nextStepsStore[profileId].push(STEP_OPTIONS[0]);
+  renderNextSteps(profileId, true);
+}
+
+function removeStep(profileId, idx) {
+  nextStepsStore[profileId].splice(idx, 1);
+  renderNextSteps(profileId, true);
+}
+
+function initProfile(id, submittedBy, submittedAt) {
+  if (!docStore[id]) docStore[id] = [
+    { id:1, name:'Business Plan 2026.pdf',   type:'Document Type 1', size:'1.2 MB', uploader:'Jordan Lee',       role:'Respondent',  date:'Apr 7, 2026', time:'8:42 PM' },
+    { id:2, name:'GTM Strategy.docx',         type:'Document Type 2', size:'340 KB', uploader:'Linda Porzenheim', role:'Admin',       date:'Apr 8, 2026', time:'10:15 AM' },
+  ];
+  if (!activityLog[id]) activityLog[id] = [
+    { type:'submit', who:'Jordan Lee',       role:'Respondent', what:'Submitted the qualifier',             date:'Apr 7, 2026', time:'8:42 PM' },
+    { type:'upload', who:'Jordan Lee',       role:'Respondent', what:'Uploaded Business Plan 2026.pdf',     date:'Apr 7, 2026', time:'8:43 PM' },
+    { type:'upload', who:'Linda Porzenheim', role:'Admin',      what:'Uploaded GTM Strategy.docx',          date:'Apr 8, 2026', time:'10:15 AM' },
+    { type:'edit',   who:'Jordan Lee',       role:'Respondent', what:'Updated business goal',               date:'Apr 9, 2026', time:'2:30 PM' },
+  ];
+}
+
+function logActivity(profileId, type, who, role, what) {
+  if (!activityLog[profileId]) activityLog[profileId] = [];
+  const now = new Date();
+  activityLog[profileId].unshift({
+    type, who, role, what,
+    date: now.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}),
+    time: now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})
+  });
+}
+
+function renderDocs(profileId) {
+  const docs = docStore[profileId] || [];
+  const el = document.getElementById('doc-list-' + profileId);
+  if (!el) return;
+  el.innerHTML = docs.length === 0
+    ? '<div class="doc-empty">No documents uploaded yet.</div>'
+    : docs.map(d => `
+      <div class="doc-item">
+        <div class="doc-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a3d6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="doc-name">${d.name}</div>
+          <div class="doc-meta">${d.size} · Uploaded by ${d.uploader} (${d.role}) · ${d.date} at ${d.time}</div>
+        </div>
+        <span class="doc-type-tag">${d.type}</span>
+        <button class="doc-del" onclick="deleteDoc(${profileId}, ${d.id})">Remove</button>
+      </div>`).join('');
+}
+
+function renderActivity(profileId) {
+  const log = activityLog[profileId] || [];
+  const el = document.getElementById('activity-list-' + profileId);
+  if (!el) return;
+  el.innerHTML = log.map(a => `
+    <div class="activity-item">
+      <div class="activity-dot ${a.type}"></div>
+      <div class="activity-body">
+        <span class="activity-who">${a.who}</span>
+        <span style="font-size:11px;color:var(--ink-faint);margin:0 4px;">(${a.role})</span>
+        <span class="activity-what">${a.what}</span>
+      </div>
+      <div class="activity-when">${a.date} · ${a.time}</div>
+    </div>`).join('');
+}
+
+function triggerUpload(profileId) {
+  document.getElementById('file-input-' + profileId).click();
+}
+
+function handleFileSelect(profileId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const typeEl = document.getElementById('doc-type-' + profileId);
+  const type = typeEl ? typeEl.value : 'Document Type 1';
+  const uploaderName = currentUserName();
+  const uploaderRole = currentUserRole();
+  const now = new Date();
+  const date = now.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  const time = now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+  const newDoc = {
+    id: Date.now(),
+    name: file.name,
+    type,
+    size: formatBytes(file.size),
+    uploader: uploaderName,
+    role: uploaderRole,
+    date, time
+  };
+  if (!docStore[profileId]) docStore[profileId] = [];
+  docStore[profileId].push(newDoc);
+  logActivity(profileId, 'upload', uploaderName, uploaderRole, 'Uploaded ' + file.name + ' (' + type + ')');
+  renderDocs(profileId);
+  renderActivity(profileId);
+  renderComplianceGrid();
+  input.value = '';
+}
+
+function deleteDoc(profileId, docId) {
+  const doc = (docStore[profileId] || []).find(d => d.id === docId);
+  if (!doc) return;
+  docStore[profileId] = docStore[profileId].filter(d => d.id !== docId);
+  logActivity(profileId, 'edit', currentUserName(), currentUserRole(), 'Removed ' + doc.name);
+  renderDocs(profileId);
+  renderActivity(profileId);
+  renderComplianceGrid();
+}
+
+function currentUserName() {
+  return document.getElementById('sidebar-name').textContent || 'Unknown';
+}
+function currentUserRole() {
+  return document.getElementById('sidebar-role').textContent || 'Unknown';
+}
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(0) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+
+// ── SERVICE PROVIDER: My profile view ──
+function buildProviderProfile() {
+  const p = serviceProviders[0];
+  document.getElementById('team-profile-content').innerHTML = `
+    <div style="max-width:600px;">
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="profile-header">
+          <div class="profile-avatar ${p.avClass}">${p.initials}</div>
+          <div>
+            <div class="profile-name">${p.name}</div>
+            <div class="profile-meta">${p.role} · ${p.company} · ${p.email}</div>
+          </div>
+          <span class="tier-pill tier-build" style="margin-left:auto;">Service provider</span>
+        </div>
+        <div class="card-label">Business goal / bio</div>
+        <textarea class="notes-area" style="min-height:90px;" onchange="logActivity(101,&quot;edit&quot;,currentUserName(),currentUserRole(),&quot;Updated bio&quot;)">${p.businessGoal}</textarea>
+        <div style="margin-top:10px;">
+          <button class="save-btn" onclick="saveProfile(101)">Save changes</button>
+          <span class="save-confirm" id="save-confirm">Saved!</span>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-label">Documents</div>
+        <div class="doc-upload-row">
+          <select class="doc-select" id="doc-type-101">
+            <option>Document Type 1</option>
+            <option>Document Type 2</option>
+            <option>Document Type 3</option>
+          </select>
+          <button class="doc-upload-btn" onclick="triggerUpload(101)">+ Upload document</button>
+          <input type="file" class="doc-file-input" id="file-input-101" onchange="handleFileSelect(101, this)" />
+        </div>
+        <div class="doc-list" id="doc-list-101"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Activity log</div>
+        <div class="activity-list" id="activity-list-101"></div>
+      </div>
+    </div>`;
+  initProfile(101, p.name, p.submitted);
+  afterProfileRender(101);
+}
+
+// ── MARKETPLACE ──
+function buildMarketplace() {
+  renderMarketGrid();
+}
+
+function setMarketTab(tab, btn) {
+  marketTab = tab;
+  document.querySelectorAll('.market-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMarketGrid();
+}
+
+function filterMarket() {
+  marketSearch = document.getElementById('market-search-input').value.toLowerCase();
+  renderMarketGrid();
+}
+
+function starHTML(rating) {
+  var html = '';
+  for (var i = 1; i <= 5; i++) {
+    var fill = i <= Math.round(rating) ? '#c84b2f' : 'none';
+    var stroke = i <= Math.round(rating) ? '#c84b2f' : '#ddd9d0';
+    html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+  }
+  return html;
+}
+
+function renderMarketGrid() {
+  const grid = document.getElementById('market-grid');
+  if (!grid) return;
+  let providers = serviceProviders.filter(p => {
+    const matchSearch = !marketSearch ||
+      p.name.toLowerCase().includes(marketSearch) ||
+      p.company.toLowerCase().includes(marketSearch) ||
+      p.role.toLowerCase().includes(marketSearch) ||
+      p.businessGoal.toLowerCase().includes(marketSearch);
+    const matchTab  = marketTab  === 'all' || (marketTab  === 'favorites' && favorites.has(p.id));
+    const matchType = typeFilter === 'all' || p.providerType === typeFilter;
+    return matchSearch && matchTab && matchType;
+  });
+  if (providers.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;font-size:14px;color:var(--ink-faint);padding:2rem 0;">' +
+      (marketTab === 'favorites' ? 'No favorites yet — browse providers and click the heart icon to save them.' : 'No providers match your search.') +
+      '</div>';
+    return;
+  }
+  grid.innerHTML = providers.map(p => {
+    const isFav = favorites.has(p.id);
+    const goal = p.businessGoal.length > 100 ? p.businessGoal.substring(0,100)+'...' : p.businessGoal;
+    const heartFill   = isFav ? '#e85d5d' : 'none';
+    const heartStroke = isFav ? '#e85d5d' : '#a8a8a3';
+    const attrsHTML = p.attrs.map(a =>
+      '<div class="attr-popup-row"><span class="attr-popup-key">' + a.k + '</span><span class="attr-popup-val">' + a.v + '</span></div>'
+    ).join('');
+
+    return '<div class="market-card">' +
+
+      // TOP: logo, name, status
+      '<div class="market-card-top">' +
+        '<div style="display:flex;width:100%;justify-content:space-between;align-items:flex-start;">' +
+          '<button class="fav-btn ' + (isFav?'active':'') + '" id="fav-btn-' + p.id + '" onclick="toggleFavorite(' + p.id + ')" title="' + (isFav?'Remove from favorites':'Add to favorites') + '" style="border:none;background:none;cursor:pointer;padding:2px;">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="' + heartFill + '" stroke="' + heartStroke + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
+          '</button>' +
+          '<span style="font-size:10px;font-weight:500;color:var(--ink-faint);">' + p.city + '</span>' +
+        '</div>' +
+        '<div class="market-card-logo ' + p.avClass + '">' + p.initials + '</div>' +
+        '<div class="market-card-name">' + p.name + '</div>' +
+        '<div class="market-card-meta">' + p.company + '</div>' +
+        '<span class="market-card-status ' + p.statusClass + '">' + p.status + '</span>' +
+        '<span class="type-badge tb-' + p.providerType.slice(-1) + '">' + p.providerType + ' · ' + p.typeLabel + '</span>' +
+      '</div>' +
+
+      // BODY: role + goal
+      '<div class="market-card-body">' +
+        '<div style="font-size:11px;font-weight:500;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">' + p.role + '</div>' +
+        '<div class="market-card-goal">' + goal + '</div>' +
+      '</div>' +
+
+      // ATTRS: 2 key facts
+      '<div class="market-card-attrs">' +
+        '<div class="market-attr"><span class="market-attr-label">' + p.attrs[0].k + '</span><span class="market-attr-value">' + p.attrs[0].v + '</span></div>' +
+        '<div class="market-attr"><span class="market-attr-label">' + p.attrs[1].k + '</span><span class="market-attr-value">' + p.attrs[1].v + '</span></div>' +
+      '</div>' +
+
+      // FOOTER: stars + view profile + info popup
+      '<div class="market-card-footer">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<div class="market-card-stars">' + starHTML(p.rating) + '</div>' +
+          '<span class="market-card-rating">' + p.rating + ' (' + p.reviewCount + ')</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<button class="view-profile-btn" onclick="openModal(' + p.id + ')">View profile</button>' +
+          '<div class="attr-popup-wrap">' +
+            '<button class="attr-popup-btn" onclick="toggleAttrPopup(&quot;popup-' + p.id + '&quot;,event)">&#x24D8;</button>' +
+            '<div class="attr-popup" id="popup-' + p.id + '">' +
+              '<div class="attr-popup-title">Attributes</div>' +
+              attrsHTML +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+    '</div>';
+  }).join('');
+}
+
+function toggleAttrPopup(id, e) {
+  e.stopPropagation();
+  document.querySelectorAll('.attr-popup').forEach(p => {
+    if (p.id !== id) p.classList.remove('open');
+  });
+  document.getElementById(id).classList.toggle('open');
+}
+
+// Close popups when clicking elsewhere
+document.addEventListener('click', function() {
+  document.querySelectorAll('.attr-popup').forEach(p => p.classList.remove('open'));
+});
+
+function toggleFavorite(id) {
+  if (favorites.has(id)) { favorites.delete(id); } else { favorites.add(id); }
+  renderMarketGrid();
+  if (currentModalId === id) updateModalFavBtn(id);
+}
+
+function updateModalFavBtn(id) {
+  const btn = document.getElementById('modal-fav-btn');
+  if (!btn) return;
+  const isFav = favorites.has(id);
+  const fill = isFav ? '#e85d5d' : 'none';
+  const stroke = isFav ? '#e85d5d' : 'currentColor';
+  btn.className = 'modal-fav-btn' + (isFav ? ' active' : '');
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> ' +
+    (isFav ? 'Saved to favorites' : 'Add to favorites');
+}
+
+function openModal(id) {
+  const p = serviceProviders.find(x => x.id === id);
+  if (!p) return;
+  currentModalId = id;
+  const isFav = favorites.has(id);
+  const fill = isFav ? '#e85d5d' : 'none';
+  const stroke = isFav ? '#e85d5d' : 'currentColor';
+  var attrsModalHTML = p.attrs.map(a =>
+    '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--rule);font-size:13px;">' +
+      '<span style="color:var(--ink-faint);">' + a.k + '</span>' +
+      '<span style="font-weight:500;color:var(--ink);">' + a.v + '</span>' +
+    '</div>'
+  ).join('');
+  document.getElementById('modal-content').innerHTML =
+    '<div class="modal-header">' +
+      '<div class="modal-avatar ' + p.avClass + '">' + p.initials + '</div>' +
+      '<div style="flex:1;">' +
+        '<div class="modal-name">' + p.name + '</div>' +
+        '<div class="modal-meta">' + p.role + ' · ' + p.company + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-top:4px;">' +
+          '<span class="market-card-status ' + p.statusClass + '">' + p.status + '</span>' +
+          '<span class="type-badge tb-' + p.providerType.slice(-1) + '">' + p.providerType + ' · ' + p.typeLabel + '</span>' +
+          '<span style="font-size:11px;color:var(--ink-faint);">' + p.city + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-section"><div class="modal-label">Business goal & expertise</div>' +
+      '<div class="modal-value">' + p.businessGoal + '</div></div>' +
+    '<div class="modal-section">' +
+      '<div class="modal-label">Rating</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+        '<div class="market-card-stars">' + starHTML(p.rating) + '</div>' +
+        '<span style="font-size:13px;font-weight:500;color:var(--ink);">' + p.rating + '</span>' +
+        '<span style="font-size:12px;color:var(--ink-faint);">(' + p.reviewCount + ' reviews)</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-section"><div class="modal-label">Attributes</div>' +
+      attrsModalHTML + '</div>' +
+    '<div class="modal-section"><div class="modal-label">Contact</div>' +
+      '<div class="modal-value" style="color:var(--blue);">' + p.email + '</div></div>' +
+    '<div class="modal-fav-row" style="flex-wrap:wrap;gap:8px;">' +
+      '<span style="font-size:12px;color:var(--ink-faint);">Interested in working with ' + p.name.split(' ')[0] + '?</span>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<button class="modal-fav-btn ' + (isFav ? 'active' : '') + '" id="modal-fav-btn" onclick="toggleFavorite(' + id + ');updateModalFavBtn(' + id + ');">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> ' +
+          (isFav ? 'Favorited' : 'Add to favorites') +
+        '</button>' +
+        '<button class="modal-fav-btn ' + (invitedProviders.has(id) ? 'active' : '') + '" id="modal-invite-btn" onclick="toggleInviteProvider(' + id + ');" style="' + (invitedProviders.has(id) ? 'border-color:#1a6b4a;color:#1a6b4a;background:#e6f2ec;' : '') + '">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> ' +
+          (invitedProviders.has(id) ? 'Invited to dashboard' : 'Invite to my dashboard') +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  currentModalId = null;
+}
+
+// ── SHARED PROFILE HTML ──
+function buildProfileHTML(s, editable) {
+  initProfile(s.id, s.name, s.submitted);
+  initNextSteps(s.id, s.selectedSteps);
+  initNotes(s.id, s.notes ? [{ who:'Jordan Lee', role:'Respondent', body:s.notes, date:'Apr 7, 2026', time:'8:42 PM' }] : []);
+
+  const editAttr = editable ? 'contenteditable="true"' : '';
+  const editCls  = editable ? 'editable' : '';
+
+  // Build qualifier Q&A section — collapsible per dimension
+  const qaHTML = s.qa ? s.qa.map((dim, di) => {
+    const dimScore = dim.questions.reduce((t,q) => t+q.score, 0);
+    const dimMax   = dim.questions.length * 3;
+    const pct      = Math.round(dimScore/dimMax*100);
+    const sectionId = 'qa-' + s.id + '-' + di;
+    return '<div class="qa-dim-block">' +
+      '<div class="collapsible-header" onclick="toggleSection(&quot;' + sectionId + '&quot;)">' +
+        '<div style="flex:1;">' +
+          '<div class="qa-dim-header" style="margin-bottom:4px;">' +
+            '<span class="qa-dim-name">' + dim.dim + '</span>' +
+            '<span class="qa-dim-score">' + dimScore + ' / ' + dimMax + '</span>' +
+          '</div>' +
+          '<div class="qa-dim-bar"><div class="qa-dim-fill" style="width:' + pct + '%;"></div></div>' +
+        '</div>' +
+        '<span class="collapse-icon open" id="section-icon-' + sectionId + '">&#9660;</span>' +
+      '</div>' +
+      '<div class="collapsible-body" id="section-body-' + sectionId + '">' +
+        dim.questions.map(q =>
+          '<div class="qa-item">' +
+            '<div class="qa-question">' + q.q + '</div>' +
+            '<div class="qa-answer">' + q.a +
+              '<span class="qa-score-pill qa-s' + q.score + '">' + q.score + '/3</span>' +
+            '</div>' +
+          '</div>'
+        ).join('') +
+      '</div>' +
+    '</div>';
+  }).join('') : '<div style="font-size:13px;color:var(--ink-faint);">Qualifier answers not available.</div>';
+
+  return (
+    // ── SAVE BANNER ──
+    (editable ?
+      '<div class="save-banner" id="save-banner-' + s.id + '">' +
+        '<div class="save-banner-info">Not yet saved — changes will be lost on refresh.</div>' +
+        '<button class="save-banner-btn" id="save-banner-btn-' + s.id + '" onclick="saveWholeProfile(' + s.id + ')">Save profile</button>' +
+      '</div>'
+    : '') +
+
+    // ── CONTACT CARD ──
+    '<div class="card">' +
+      '<div class="profile-header">' +
+        '<div class="profile-avatar ' + s.avClass + '">' + s.initials + '</div>' +
+        '<div><div class="profile-name">' + s.name + '</div>' +
+        '<div class="profile-meta">' + s.role + ' · ' + s.company + ' · ' + s.email + '</div></div>' +
+        '<span class="tier-pill ' + s.tierClass + '" style="margin-left:auto;">' + s.tier + '</span>' +
+      '</div>' +
+      '<div class="card-label">Contact details</div>' +
+      '<div class="field-row">' +
+        '<div><div class="field-label">Company</div><div class="field-value ' + editCls + '" ' + editAttr + '>' + s.company + '</div></div>' +
+        '<div><div class="field-label">Role / title</div><div class="field-value ' + editCls + '" ' + editAttr + '>' + s.role + '</div></div>' +
+      '</div>' +
+      '<div class="field-row"><div><div class="field-label">Email</div><div class="field-value ' + editCls + '" ' + editAttr + '>' + s.email + '</div></div>' +
+        '<div><div class="field-label">Submitted</div><div class="field-value">' + s.submitted + '</div></div>' +
+      '</div>' +
+      '<div class="field-row single"><div><div class="field-label">Business goal</div>' +
+        (editable
+          ? '<textarea class="field-value editable" style="min-height:70px;">' + s.businessGoal + '</textarea>'
+          : '<div class="field-value" style="line-height:1.6;font-size:13px;">' + s.businessGoal + '</div>') +
+      '</div></div>' +
+
+    '</div>' +
+
+    // ── QUALIFIER ANSWERS ──
+    '<div class="card">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
+        '<div class="card-label" style="margin:0;">Qualifier answers</div>' +
+        '<span style="font-size:13px;font-weight:600;color:var(--ink);">Total: ' + s.score + ' / 24</span>' +
+      '</div>' +
+      qaHTML +
+    '</div>' +
+
+    // ── NEXT STEPS ──
+    '<div class="card">' +
+      '<div class="card-label">Selected next steps</div>' +
+      '<div id="next-steps-editor-' + s.id + '"></div>' +
+      (editable ? '<div style="margin-top:10px;"><button class="save-btn" onclick="saveNextSteps(' + s.id + ')">Save next steps</button></div>' : '') +
+    '</div>' +
+
+    // ── NOTES THREAD ──
+    '<div class="card">' +
+      '<div class="card-label">Notes</div>' +
+      '<div class="notes-thread" id="notes-thread-' + s.id + '"></div>' +
+      '<div class="note-add-row">' +
+        '<textarea class="note-add-textarea" id="note-input-' + s.id + '" placeholder="Add a note — all users with access can see this..."></textarea>' +
+        '<div class="note-add-footer">' +
+          '<button class="save-btn" onclick="addNote(' + s.id + ')">Add note</button>' +
+          '<span style="font-size:11px;color:var(--ink-faint);">Will be timestamped with your name and role</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── DOCUMENTS ──
+    '<div class="card">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
+        '<div class="card-label" style="margin:0;">Documents</div>' +
+      '</div>' +
+      '<div class="doc-upload-row">' +
+        '<select class="doc-select" id="doc-type-' + s.id + '">' +
+          '<option>Document Type 1</option>' +
+          '<option>Document Type 2</option>' +
+          '<option>Document Type 3</option>' +
+        '</select>' +
+        '<button class="doc-upload-btn" onclick="triggerUpload(' + s.id + ')">+ Upload document</button>' +
+        '<input type="file" class="doc-file-input" id="file-input-' + s.id + '" onchange="handleFileSelect(' + s.id + ', this)" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.png,.jpg" />' +
+      '</div>' +
+      '<div class="doc-list" id="doc-list-' + s.id + '"></div>' +
+    '</div>' +
+
+    // ── ACTIVITY LOG ──
+    '<div class="card">' +
+      '<div class="card-label">Activity log</div>' +
+      '<div class="activity-list" id="activity-list-' + s.id + '"></div>' +
+    '</div>'
+  );
+}
+
+
+// ── SAVE BANNER STATE ──
+const saveState = {}; // keyed by profileId: { who, role, date, time }
+
+function renderSaveBanner(profileId) {
+  const el = document.getElementById('save-banner-' + profileId);
+  if (!el) return;
+  const s = saveState[profileId];
+  const infoEl = el.querySelector('.save-banner-info');
+  if (infoEl) {
+    infoEl.innerHTML = s
+      ? 'Last saved by <span class="save-banner-who">' + s.who + '</span> (' + s.role + ') on ' + s.date + ' at ' + s.time
+      : 'Not yet saved — changes will be lost on refresh.';
+  }
+}
+
+function saveWholeProfile(profileId) {
+  const btn = document.getElementById('save-banner-btn-' + profileId);
+  if (btn) { btn.textContent = 'Saving...'; btn.classList.add('saving'); }
+  const now = new Date();
+  saveState[profileId] = {
+    who:  currentUserName(),
+    role: currentUserRole(),
+    date: now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    time: now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+  };
+  logActivity(profileId,'edit',currentUserName(),currentUserRole(),'Saved full profile');
+  renderActivity(profileId);
+  renderSaveBanner(profileId);
+  setTimeout(() => {
+    if (btn) { btn.textContent = 'Save profile'; btn.classList.remove('saving'); }
+  }, 1200);
+}
+
+function toggleSection(id) {
+  const body = document.getElementById('section-body-' + id);
+  const icon = document.getElementById('section-icon-' + id);
+  if (!body || !icon) return;
+  body.classList.toggle('closed');
+  icon.classList.toggle('open');
+}
+
+// ── TYPE FILTER ──
+let typeFilter = 'all';
+function setTypeFilter(type, btn) {
+  typeFilter = type;
+  document.querySelectorAll('.type-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMarketGrid();
+}
+
+// ── PARTNERS & INVITED PROVIDERS ──
+let partners = [
+  { name:'Alex Torres', email:'alex@greenfield.com', initials:'AT', avClass:'av-admin' }
+];
+let invitedProviders = new Set();
+
+function renderPartners() {
+  const list = document.getElementById('partner-list');
+  if (!list) return;
+  if (partners.length === 0) {
+    list.innerHTML = '<div class="empty-people">No partners added yet.</div>';
+    return;
+  }
+  list.innerHTML = partners.map((p,i) =>
+    '<div class="person-card">' +
+      '<div class="person-avatar ' + p.avClass + '">' + p.initials + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div class="person-name">' + p.name + '</div>' +
+        '<div class="person-role">' + p.email + '</div>' +
+        '<span class="person-type pt-partner">Partner</span>' +
+      '</div>' +
+      '<button class="remove-person" onclick="removePartner(' + i + ')">&#x2715;</button>' +
+    '</div>'
+  ).join('');
+}
+
+function addPartner() {
+  const input = document.getElementById('partner-email-input');
+  const email = input ? input.value.trim() : '';
+  if (!email || !email.includes('@')) { if (input) input.focus(); return; }
+  const name = email.split('@')[0].replace(/[._]/g,' ').replace(/\w/g,c=>c.toUpperCase());
+  const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  partners.push({ name, email, initials, avClass:'av-respondent' });
+  logActivity(1,'edit',currentUserName(),currentUserRole(),'Added partner: ' + email);
+  renderPartners();
+  renderActivity(1);
+  if (input) input.value = '';
+}
+
+function removePartner(i) {
+  const removed = partners.splice(i,1)[0];
+  logActivity(1,'edit',currentUserName(),currentUserRole(),'Removed partner: ' + removed.email);
+  renderPartners();
+  renderActivity(1);
+}
+
+function renderInvitedProviders() {
+  const list = document.getElementById('invited-providers-list');
+  const msg  = document.getElementById('no-providers-msg');
+  if (!list) return;
+  const invited = serviceProviders.filter(p => invitedProviders.has(p.id));
+  if (msg) msg.style.display = invited.length === 0 ? 'block' : 'none';
+  list.innerHTML = invited.map(p =>
+    '<div class="person-card provider-card">' +
+      '<div class="person-avatar ' + p.avClass + '">' + p.initials + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div class="person-name">' + p.name + '</div>' +
+        '<div class="person-role">' + p.company + '</div>' +
+        '<span class="type-badge tb-' + p.providerType.slice(-1) + '">' + p.providerType + '</span>' +
+      '</div>' +
+      '<button class="remove-person" onclick="removeInvitedProvider(' + p.id + ')">&#x2715;</button>' +
+    '</div>'
+  ).join('');
+}
+
+function toggleInviteProvider(id) {
+  const p = serviceProviders.find(x => x.id === id);
+  if (!p) return;
+  if (invitedProviders.has(id)) {
+    invitedProviders.delete(id);
+    logActivity(1,'edit',currentUserName(),currentUserRole(),'Removed provider from dashboard: ' + p.name);
+  } else {
+    invitedProviders.add(id);
+    logActivity(1,'edit',currentUserName(),currentUserRole(),'Invited provider to dashboard: ' + p.name);
+  }
+  renderInvitedProviders();
+  renderActivity(1);
+  // Update invite button in modal if open
+  const invBtn = document.getElementById('modal-invite-btn');
+  if (invBtn) {
+    const isNowInvited = invitedProviders.has(id);
+    invBtn.style.borderColor = isNowInvited ? '#1a6b4a' : '';
+    invBtn.style.color       = isNowInvited ? '#1a6b4a' : '';
+    invBtn.style.background  = isNowInvited ? '#e6f2ec' : '';
+    invBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> ' +
+      (isNowInvited ? 'Invited to dashboard' : 'Invite to my dashboard');
+  }
+}
+
+function removeInvitedProvider(id) {
+  toggleInviteProvider(id);
+}
+
+
+// ── GROUP FUNCTIONS ──
+
+function buildAdminGroups() {
+  renderAdminGroups();
+}
+
+function renderAdminGroups() {
+  const list = document.getElementById('admin-groups-list');
+  if (!list) return;
+  if (groups.length === 0) {
+    list.innerHTML = '<div class="no-group-msg">No groups created yet.</div>';
+    return;
+  }
+  list.innerHTML = groups.map(g => {
+    const memberRows = g.members.map(m =>
+      '<div class="group-member-row">' +
+        '<div class="pill-avatar ' + m.avClass + '" style="width:28px;height:28px;font-size:10px;">' + m.initials + '</div>' +
+        '<div style="flex:1;">' +
+          '<div class="group-member-name">' + m.name + '</div>' +
+          '<div class="group-member-role">' + m.role + '</div>' +
+        '</div>' +
+        '<span class="group-member-type ' + (m.type==='owner'?'gmt-owner':'gmt-partner') + '">' + (m.type==='owner'?'Owner':'Partner') + '</span>' +
+        '<button class="view-member-btn" onclick="adminViewGroupMember(' + m.profileId + ')">View profile</button>' +
+      '</div>'
+    ).join('');
+    return '<div class="group-card">' +
+      '<div class="group-card-header" onclick="toggleGroupCard(&quot;gc-' + g.id + '&quot;)">' +
+        '<div>' +
+          '<div class="group-name">' + g.name + '</div>' +
+          '<div class="group-meta">Created by ' + g.createdBy + ' · ' + g.created + '</div>' +
+        '</div>' +
+        '<span class="group-count">' + g.members.length + ' members</span>' +
+      '</div>' +
+      '<div class="group-members" id="gc-' + g.id + '">' + memberRows + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleGroupCard(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function adminCreateGroup() {
+  const input = document.getElementById('admin-group-name-input');
+  const name = input ? input.value.trim() : '';
+  if (!name) { if (input) input.focus(); return; }
+  groups.push({
+    id: 'grp-' + Date.now(),
+    name,
+    createdBy: currentUserName(),
+    createdRole: currentUserRole(),
+    created: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    members: []
+  });
+  if (input) input.value = '';
+  renderAdminGroups();
+}
+
+function adminViewGroupMember(profileId) {
+  const p = findProfile(profileId);
+  if (!p) return;
+  document.getElementById('group-member-profile-content').innerHTML = buildProfileHTML(p, true);
+  showPage('page-group-member-profile');
+  afterProfileRender(p.id, true);
+}
+
+// ── MY GROUP (Respondent view) ──
+function buildMyGroup() {
+  const myGroup = findGroup(1); // Jordan is profile id:1
+  const el = document.getElementById('my-group-content');
+  const subEl = document.getElementById('my-group-sub');
+  if (!el) return;
+
+  if (!myGroup) {
+    el.innerHTML =
+      '<div class="group-banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>You are not part of a group yet.</div>' +
+      '<div class="create-group-row">' +
+        '<input type="text" class="group-name-input" id="resp-group-name-input" placeholder="Name your group (e.g. Greenfield Group)..." />' +
+        '<button class="create-group-btn" onclick="respondentCreateGroup()">Create my group</button>' +
+      '</div>';
+    return;
+  }
+
+  if (subEl) subEl.textContent = myGroup.name + ' · ' + myGroup.members.length + ' members';
+
+  el.innerHTML =
+    '<div class="group-banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>' +
+    '<strong>' + myGroup.name + '</strong> — ' + myGroup.members.length + ' members</div>' +
+
+    '<div id="my-group-invite-section"></div>' +
+    '<div class="table-card" style="margin-bottom:1rem;">' +
+      '<div class="table-header"><span class="table-title">Group members</span></div>' +
+      '<table>' +
+        '<thead><tr><th>Name</th><th>Role</th><th>Type</th><th>Tier</th><th>Score</th><th></th></tr></thead>' +
+        '<tbody>' + myGroup.members.map(m => {
+          const p = findProfile(m.profileId);
+          const isMe = m.profileId === 1;
+          return '<tr>' +
+            '<td><div style="display:flex;align-items:center;gap:8px;"><div class="pill-avatar ' + m.avClass + '" style="width:26px;height:26px;font-size:10px;">' + m.initials + '</div>' + m.name + (isMe ? ' <span style="font-size:10px;color:var(--ink-faint);">(you)</span>' : '') + '</div></td>' +
+            '<td style="color:var(--ink-faint);">' + m.role + '</td>' +
+            '<td><span class="group-member-type ' + (m.type==='owner'?'gmt-owner':'gmt-partner') + '">' + (m.type==='owner'?'Owner':'Partner') + '</span></td>' +
+            '<td>' + (p ? '<span class="tier-pill ' + p.tierClass + '">' + p.tier + '</span>' : '—') + '</td>' +
+            '<td>' + (p ? p.score + ' / 24' : '—') + '</td>' +
+            '<td>' + (isMe
+              ? '<span style="font-size:12px;color:var(--ink-faint);">Your profile</span>'
+              : '<button class="view-member-btn" onclick="viewPartnerReadonly(' + m.profileId + ')">View profile</button>') +
+            '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody>' +
+      '</table>' +
+    '</div>';
+}
+
+function buildMyGroupInviteSection() {
+  const el = document.getElementById('my-group-invite-section');
+  if (!el) return;
+  const myGroup = findGroup(1);
+  const groupName = myGroup ? myGroup.name : '';
+  const canInviteGroup = !!myGroup;
+  el.innerHTML = buildProviderInviteSection(1, groupName, canInviteGroup);
+}
+
+function respondentCreateGroup() {
+  const input = document.getElementById('resp-group-name-input');
+  const name = input ? input.value.trim() : '';
+  if (!name) { if (input) input.focus(); return; }
+  groups.push({
+    id: 'grp-' + Date.now(),
+    name,
+    createdBy: 'Jordan Lee',
+    createdRole: 'Respondent',
+    created: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    members: [{ profileId:1, name:'Jordan Lee', role:'Respondent', type:'owner', initials:'JL', avClass:'av-respondent' }]
+  });
+  buildMyGroup();
+  buildMyGroupInviteSection();
+}
+
+function viewPartnerReadonly(profileId) {
+  const p = findProfile(profileId);
+  if (!p) return;
+  document.getElementById('partner-readonly-content').innerHTML = buildProfileHTML(p, false);
+  showPage('page-partner-readonly');
+  afterProfileRender(p.id, false);
+}
+
+// ── PARTNER DASHBOARD ──
+function buildPartnerDashboard() {
+  // Casey Morgan is partner profile id:201
+  const p = partnerProfiles[0];
+  const myGroup = findGroup(p.id);
+  const el = document.getElementById('partner-dashboard-content');
+  if (!el) return;
+  el.innerHTML =
+    (myGroup ? '<div class="group-banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>You are part of <strong>' + myGroup.name + '</strong></div>' : '') +
+    buildProfileHTML(p, true);
+  afterProfileRender(p.id, true);
+}
+
+// ── COMPLIANCE GRID ──
+let complianceFilter = 'all';
+
+function buildComplianceGrid() {
+  renderComplianceGrid();
+}
+
+function filterCompliance(filter, btn) {
+  complianceFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderComplianceGrid();
+}
+
+function renderComplianceGrid() {
+  const tbody = document.getElementById('compliance-tbody');
+  if (!tbody) return;
+
+  const rows = submissions.map(s => {
+    const docs = docStore[s.id] || [];
+    const hasDocType1 = docs.some(d => d.type === 'Document Type 1');
+    const hasDocType2 = docs.some(d => d.type === 'Document Type 2');
+    const hasDocType3 = docs.some(d => d.type === 'Document Type 3');
+    const hasGoal     = s.businessGoal && s.businessGoal.trim().length > 0;
+    const hasSteps    = s.selectedSteps && s.selectedSteps.trim().length > 0;
+    const hasNotes    = s.notes && s.notes.trim().length > 0;
+
+    const checks = [true, hasGoal, hasSteps, hasDocType1, hasDocType2, hasDocType3, hasNotes];
+    const completed = checks.filter(Boolean).length;
+    const total = checks.length;
+    const pct = Math.round(completed / total * 100);
+
+    const missing = [];
+    if (!hasGoal)     missing.push('Business goal');
+    if (!hasSteps)    missing.push('Next steps');
+    if (!hasDocType1) missing.push('Doc Type 1');
+    if (!hasDocType2) missing.push('Doc Type 2');
+    if (!hasDocType3) missing.push('Doc Type 3');
+    if (!hasNotes)    missing.push('Notes');
+
+    return { s, checks, pct, missing, completed, total };
+  });
+
+  const filtered = rows.filter(r => {
+    if (complianceFilter === 'complete')   return r.pct === 100;
+    if (complianceFilter === 'incomplete') return r.pct < 100;
+    return true;
+  });
+
+  const barColor = pct => pct === 100 ? '#2d8f62' : pct >= 60 ? '#ba7517' : '#c84b2f';
+
+  const checkIcon = (val) => val
+    ? `<div class="check-yes"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#1a6b4a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+    : `<div class="check-no"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="#c84b2f" stroke-width="1.5" stroke-linecap="round"/></svg></div>`;
+
+  tbody.innerHTML = filtered.map(({s, checks, pct, missing}) => `
+    <tr style="cursor:pointer;" onclick="showAdminProfile(${s.id}); showPage('page-admin-profile');">
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="pill-avatar ${s.avClass}" style="width:28px;height:28px;font-size:10px;">${s.initials}</div>
+          <div>
+            <div style="font-weight:500;">${s.name}</div>
+            <div style="font-size:11px;color:var(--ink-faint);">${s.company}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="tier-pill ${s.tierClass}">${s.tier}</span></td>
+      ${checks.map(c => `<td class="check-cell">${checkIcon(c)}</td>`).join('')}
+      <td>
+        <div class="complete-bar-wrap">
+          <div class="complete-bar"><div class="complete-bar-fill" style="width:${pct}%;background:${barColor(pct)};"></div></div>
+          <span class="complete-pct">${pct}%</span>
+        </div>
+      </td>
+      <td>${missing.length === 0
+        ? '<span style="font-size:12px;color:var(--green);">All complete</span>'
+        : missing.map(m => `<span class="missing-tag">${m}</span>`).join('')}
+      </td>
+    </tr>`).join('');
+}
+
+function saveProfile(profileId) {
+  logActivity(profileId, 'edit', currentUserName(), currentUserRole(), 'Saved profile changes');
+  renderActivity(profileId);
+  const c = document.getElementById('save-confirm');
+  if (c) { c.style.display = 'inline'; setTimeout(() => { if(c) c.style.display = 'none'; }, 2500); }
+}
+
+// Re-render docs, notes, next steps and activity after profile HTML is inserted into DOM
+function afterProfileRender(profileId, editable) {
+  renderDocs(profileId);
+  renderActivity(profileId);
+  renderNotes(profileId);
+  renderNextSteps(profileId, editable || false);
+  renderSaveBanner(profileId);
+}
+
+function saveNextSteps(profileId) {
+  logActivity(profileId,'edit',currentUserName(),currentUserRole(),'Updated next steps');
+  renderActivity(profileId);
+  const c = document.getElementById('save-confirm');
+  if (c) { c.style.display='inline'; setTimeout(()=>c.style.display='none',2500); }
+}
+</script>
+</body>
+</html>
