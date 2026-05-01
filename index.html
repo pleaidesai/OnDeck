@@ -115,24 +115,37 @@
   /* ── PROOF STRIP ── */
   .proof-strip {
     border-bottom: 1px solid var(--rule);
-    padding: 28px 2rem;
-    display: flex; align-items: center; justify-content: center;
-    gap: 0; flex-wrap: nowrap; overflow-x: auto;
+    padding: 36px 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    row-gap: 24px; column-gap: 40px;
     max-width: 820px; margin: 0 auto;
     opacity: 0; animation: fadeUp .6s .5s forwards;
   }
-  .proof-item { display: flex; flex-direction: row; align-items: baseline; gap: 6px; white-space: nowrap; padding: 0 24px; }
+  .proof-item {
+    display: flex; flex-direction: row; align-items: baseline;
+    gap: 12px; white-space: nowrap;
+  }
+  .proof-item:nth-of-type(odd) { justify-self: start; }
+  .proof-item:nth-of-type(even) { justify-self: end; }
   .proof-num {
     font-family: 'DM Serif Display', serif;
-    font-size: 24px; color: var(--ink); letter-spacing: -0.02em; white-space: nowrap;
+    font-size: 38px; color: var(--ink); letter-spacing: -0.02em; white-space: nowrap;
   }
-  .proof-label { font-size: 12px; color: var(--ink-faint); font-weight: 400; white-space: nowrap; }
-  .proof-divider { width: 1px; height: 32px; background: var(--rule); flex-shrink: 0; }
+  .proof-label { font-size: 15px; color: var(--ink-faint); font-weight: 400; white-space: nowrap; }
+  .proof-divider { display: none; }
   @media (max-width: 600px) {
-    .proof-strip { gap: 0; padding: 20px 1rem; }
-    .proof-item { padding: 0 12px; }
-    .proof-num { font-size: 18px; }
-    .proof-label { font-size: 11px; }
+    .proof-strip {
+      grid-template-columns: 1fr;
+      padding: 24px 1rem;
+      row-gap: 16px;
+    }
+    .proof-item,
+    .proof-item:nth-of-type(odd),
+    .proof-item:nth-of-type(even) { justify-self: center; }
+    .proof-num { font-size: 28px; }
+    .proof-label { font-size: 13px; }
   }
 
   /* ── SECTION SHARED ── */
@@ -182,7 +195,9 @@
     transition: transform 0.6s cubic-bezier(0.4,0.2,0.2,1);
     transform-style: preserve-3d;
   }
-  .persona-card:hover .persona-card-inner { transform: rotateY(180deg); }
+  @media (hover: hover) {
+    .persona-card:hover .persona-card-inner { transform: rotateY(180deg); }
+  }
   .persona-card.flipped .persona-card-inner { transform: rotateY(180deg); }
   .persona-card-front, .persona-card-back {
     position: absolute; width: 100%; height: 100%;
@@ -423,7 +438,7 @@
   </div>
   <div class="proof-divider"></div>
   <div class="proof-item">
-    <span class="proof-num">5</span>
+    <span class="proof-num">4</span>
     <span class="proof-label">tiers for bespoke solutions</span>
   </div>
 </div>
@@ -819,6 +834,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById(id).addEventListener('keydown', function(e) {
       if (e.key==='Enter') startQuiz();
     });
+  });
+});
+
+// Persona card tap-to-flip (mobile + desktop)
+document.querySelectorAll('.persona-card').forEach(card => {
+  card.addEventListener('click', () => {
+    card.classList.toggle('flipped');
   });
 });
 
