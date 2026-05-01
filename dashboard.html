@@ -1795,7 +1795,7 @@ function renderCalendar() {
     const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     const dateObj = new Date(calYear, calMonth, d, 12);
     const apptHTML = familyEvents.filter(e => e.date === dateStr).map(e =>
-      '<div class="cal-event ' + e.type + '" title="' + e.title + ' · ' + e.time + '">' + e.title + '</div>'
+      '<div class="cal-event ' + e.type + '" title="' + e.title + ' · ' + e.time + '">' + e.title + (e.time ? ' · ' + e.time : '') + '</div>'
     ).join('');
     const schedHTML = getSchedEvents(dateObj).map(e =>
       '<div class="cal-event ' + e.cls + '">' + e.label + '</div>'
