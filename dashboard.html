@@ -1613,35 +1613,40 @@ function renderStatusPills(profileId) {
   ).join('');
 }
 
-// ── DIVORCE JOURNEY STAGE TRACKER ──
-// Tracks where each family is in their divorce journey. Siena can update as they progress.
-// Default for the original Jordan Lee demo profile is 'active' to match the seeded data.
-const journeyStageStore = {1: 'active'};
-
-const JOURNEY_STAGES = [
-  { key:'researching',  label:'Just researching' },
-  { key:'decided',      label:'Decided to divorce' },
-  { key:'separated',    label:'Currently separated' },
-  { key:'active',       label:'Actively mediating' },
-  { key:'agreement',    label:'Agreement reached' },
-  { key:'post',         label:'Post-divorce support' },
+// ── QUALIFIER QUESTIONS (mirrors the assessment in index.html) ──
+// Used so admin can fill in the qualifier answers for a manually added respondent.
+const QUALIFIER_QUESTIONS = [
+  { dim:'Divorce journey',      q:'What stage are you in your divorce journey?',          opts:[{t:'Just researching for now',s:0},{t:"We've made the decision to divorce",s:1},{t:'Currently separated, researching mediation',s:2},{t:'We are actively looking for a mediator',s:3}] },
+  { dim:'Mediation interest',   q:'What is your interest in mediation?',                   opts:[{t:'Reduced legal fees',s:1},{t:'Putting our children first',s:2},{t:'Reaching an amicable agreement',s:2},{t:'All of the above',s:3}] },
+  { dim:'Family profile',       q:'Tell us about your family:',                            opts:[{t:'No children',s:1},{t:'Children in grades 1-8',s:2},{t:'Children in high school/college',s:2},{t:'Adult children',s:2}] },
+  { dim:'Earning structure',    q:"Describe your family's earning structure:",             opts:[{t:'We are both retired',s:1},{t:'We will continue to be a 2-income household',s:2},{t:'We will remain a single-earning household',s:2},{t:'One of us will re-enter the workforce',s:3}] },
+  { dim:'Timeline',             q:'What is your desired timeline for divorce completion?', opts:[{t:'Not sure',s:0},{t:'2+ years',s:1},{t:'Next year',s:2},{t:'As soon as we can',s:3}] },
+  { dim:'Post-divorce support', q:'What value do you see in mediation post-divorce?',      opts:[{t:'None beyond divorce process.',s:0},{t:'A quarterly check-in would be great.',s:1},{t:'There will be occasional conflict at times.',s:2},{t:'We will need ongoing support for the children.',s:3}] },
+  { dim:'Additional resources', q:'What additional non-legal resources might be helpful?', opts:[{t:'None, we have a network of resources',s:0},{t:'Coaching, social work, counseling',s:2},{t:'Financial and Education services',s:2},{t:'Others not listed here',s:1}] },
+  { dim:'Next steps',           q:'What would be helpful next steps?',                     opts:[{t:'Nothing right now — still researching',s:0},{t:'Please send me literature on mediation',s:1},{t:'You have permission to add me to your email newsletter',s:2},{t:'Please contact me directly, I am ready to get started',s:3}] },
 ];
 
-function setJourneyStage(profileId, key) {
-  journeyStageStore[profileId] = key;
-  renderJourneyStage(profileId);
-}
-
-function renderJourneyStage(profileId) {
-  const el = document.getElementById('journey-stage-' + profileId);
-  if (!el) return;
-  const current = journeyStageStore[profileId] || 'researching';
-  el.innerHTML = JOURNEY_STAGES.map((s, i) =>
-    '<button class="status-pill-btn' + (current === s.key ? ' active-prospect' : '') +
-    '" onclick="setJourneyStage(' + profileId + ',\'' + s.key + '\')">' +
-    (i + 1) + '. ' + s.label +
-    '</button>'
-  ).join('');
+// Update a single answer on a profile, recompute scores, and re-render the profile.
+function updateQualifierAnswer(profileId, dimIndex, answerText) {
+  const profile = findProfile(profileId);
+  if (!profile || !profile.qa || !profile.qa[dimIndex]) return;
+  const qDef = QUALIFIER_QUESTIONS[dimIndex];
+  if (!qDef) return;
+  // Find the matching option to get its score
+  const opt = qDef.opts.find(o => o.t === answerText);
+  const score = opt ? opt.s : 0;
+  // Update the qa entry (assumes one question per dim, matching the existing data shape)
+  profile.qa[dimIndex].questions[0].a = answerText;
+  profile.qa[dimIndex].questions[0].score = score;
+  // Update the dims score for the same dimension if it exists
+  if (profile.dims && profile.dims[dimIndex]) {
+    profile.dims[dimIndex].s = score;
+  }
+  // Recompute total score
+  profile.score = profile.qa.reduce((sum, d) => sum + d.questions.reduce((s,q) => s + (q.score || 0), 0), 0);
+  // Re-render the profile so updated scores and totals show
+  document.getElementById('admin-profile-content').innerHTML = buildProfileHTML(profile, true);
+  afterProfileRender(profile.id, true);
 }
 const STEP_OPTIONS = [
   'Add to newsletter subscriber list',
@@ -2207,6 +2212,7 @@ function buildProfileHTML(s, editable) {
     const dimMax   = dim.questions.length * 4;
     const pct      = Math.round(dimScore/dimMax*100);
     const sectionId = 'qa-' + s.id + '-' + di;
+    const qDef = (typeof QUALIFIER_QUESTIONS !== 'undefined') ? QUALIFIER_QUESTIONS[di] : null;
     return '<div class="qa-dim-block">' +
       '<div class="collapsible-header" onclick="toggleSection(&quot;' + sectionId + '&quot;)">' +
         '<div style="flex:1;">' +
@@ -2219,14 +2225,35 @@ function buildProfileHTML(s, editable) {
         '<span class="collapse-icon open" id="section-icon-' + sectionId + '">&#9660;</span>' +
       '</div>' +
       '<div class="collapsible-body" id="section-body-' + sectionId + '">' +
-        dim.questions.map(q =>
-          '<div class="qa-item">' +
+        dim.questions.map(q => {
+          if (editable && qDef) {
+            // Editable: render a dropdown of options. The current answer is preselected.
+            // Use onchange to push the new answer into the profile and re-render.
+            const optionsHTML = '<option value="">— select an answer —</option>' +
+              qDef.opts.map(o =>
+                '<option value="' + o.t.replace(/"/g, '&quot;') + '"' +
+                (q.a === o.t ? ' selected' : '') +
+                '>' + o.t + ' (score: ' + o.s + ')</option>'
+              ).join('');
+            return '<div class="qa-item">' +
+              '<div class="qa-question">' + q.q + '</div>' +
+              '<select class="field-value editable" style="width:100%;font-family:\'DM Sans\',sans-serif;font-size:13px;margin-top:6px;" ' +
+              'onchange="updateQualifierAnswer(' + s.id + ',' + di + ', this.value)">' +
+              optionsHTML +
+              '</select>' +
+              (q.a && q.a !== '(not yet recorded)'
+                ? '<div style="margin-top:6px;font-size:11px;color:var(--ink-faint);">Current score: <span class="qa-score-pill qa-s' + q.score + '" style="margin-left:4px;">' + q.score + '/4</span></div>'
+                : '') +
+            '</div>';
+          }
+          // Read-only: original rendering
+          return '<div class="qa-item">' +
             '<div class="qa-question">' + q.q + '</div>' +
             '<div class="qa-answer">' + q.a +
               '<span class="qa-score-pill qa-s' + q.score + '">' + q.score + '/4</span>' +
             '</div>' +
-          '</div>'
-        ).join('') +
+          '</div>';
+        }).join('') +
       '</div>' +
     '</div>';
   }).join('') : '<div style="font-size:13px;color:var(--ink-faint);">Qualifier answers not available.</div>';
@@ -2264,11 +2291,6 @@ function buildProfileHTML(s, editable) {
       '<div class="field-row single"><div>' +
         '<div class="field-label">Status</div>' +
         '<div class="status-pill-selector" id="status-pills-' + s.id + '"></div>' +
-      '</div></div>' +
-      '<div class="field-row single"><div>' +
-        '<div class="field-label">Divorce Journey Stage</div>' +
-        '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:8px;">Update as the family progresses through their divorce journey</div>' +
-        '<div class="status-pill-selector" id="journey-stage-' + s.id + '"></div>' +
       '</div></div>' +
       '<div class="field-row single"><div>' +
         '<div class="sched-section">' +
@@ -2990,7 +3012,6 @@ function saveProfile(profileId) {
 // Re-render docs, notes, next steps and activity after profile HTML is inserted into DOM
 function afterProfileRender(profileId, editable) {
   renderStatusPills(profileId);
-  renderJourneyStage(profileId);
   renderParentingSchedule(profileId);
   renderDocs(profileId);
   renderActivity(profileId);
