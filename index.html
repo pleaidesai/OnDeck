@@ -635,7 +635,7 @@
         <div id="ec-success" style="display:none;color:#6bcf9a;font-size:13px;margin-bottom:12px;">Done — check your inbox. We will follow up within one business day.</div>
         <div id="ec-error" style="display:none;color:#f09595;font-size:13px;margin-bottom:12px;">Something went wrong — please try again.</div>
         <div id="ec-form-row">
-          <button class="ec-btn" id="ec-btn" onclick="submitResults()">Submit →</button>
+          <a class="ec-btn" id="ec-btn" href="mailto:hello@ondeckmediation.com?subject=Send%20My%20Free%20Checklist" style="display:inline-block;text-decoration:none;text-align:center;">Submit →</a>
         </div>
       </div>
 
@@ -775,6 +775,10 @@ function qShowResult() {
     </button>`).join('');
 
   document.getElementById('result-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Submit survey responses to Formspree as soon as the result is shown.
+  // The user has now completed the survey — capture the data immediately.
+  submitResults();
 }
 
 function toggleStep(i) {
@@ -795,9 +799,6 @@ function toggleStep(i) {
 async function submitResults() {
   console.log('[submitResults] function called');
   try {
-    const btn    = document.getElementById('ec-btn');
-    const success= document.getElementById('ec-success');
-    const error  = document.getElementById('ec-error');
     const name   = document.getElementById('gate-name').value.trim();
     const email  = document.getElementById('gate-email').value.trim();
     const tierEl = document.querySelector('.rt-title');
@@ -805,10 +806,7 @@ async function submitResults() {
     const chosen = selectedSteps.length > 0 ? selectedSteps.map(i => currentSteps[i]).join(' | ') : 'None selected';
     console.log('[submitResults] data ready', { name, email, tier, chosen });
 
-    btn.textContent = 'Sending...'; btn.disabled = true;
-    error.style.display = 'none'; success.style.display = 'none';
-
-    // One column per question, just the answer text — no question, no embedded score.
+    // One column per question, just the answer text
     const answersPayload = {};
     Qs.forEach((q, i) => {
       const idx = ans[i];
@@ -831,23 +829,12 @@ async function submitResults() {
       })
     });
     console.log('[submitResults] fetch returned, status:', res.status, 'ok:', res.ok);
-    if (res.ok) { success.style.display='block'; btn.textContent='Sent'; }
-    else {
+    if (!res.ok) {
       const errBody = await res.text().catch(() => '');
-      console.error('Formspree submit failed:', res.status, errBody);
-      error.textContent = 'Submission failed (status ' + res.status + '). Please try again or contact support.';
-      error.style.display='block'; btn.textContent='Try again'; btn.disabled=false;
+      console.error('[submitResults] Formspree submit failed:', res.status, errBody);
     }
   } catch(e) {
     console.error('[submitResults] EXCEPTION:', e);
-    alert('Submission error: ' + (e && e.message ? e.message : String(e)));
-    const btn = document.getElementById('ec-btn');
-    const error = document.getElementById('ec-error');
-    if (error) {
-      error.textContent = 'Error: ' + (e && e.message ? e.message : 'unknown');
-      error.style.display = 'block';
-    }
-    if (btn) { btn.textContent = 'Try again'; btn.disabled = false; }
   }
 }
 
@@ -858,10 +845,6 @@ function qRestart() {
   document.getElementById('result-view').classList.remove('visible');
   document.getElementById('gate-name').value='';
   document.getElementById('gate-email').value='';
-  document.getElementById('ec-success').style.display='none';
-  document.getElementById('ec-error').style.display='none';
-  document.getElementById('ec-btn').textContent='Submit';
-  document.getElementById('ec-btn').disabled=false;
   document.getElementById('qualifier').scrollIntoView({ behavior:'smooth' });
 }
 
