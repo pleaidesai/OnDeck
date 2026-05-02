@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>On Deck Family Mediation</title>
+<title>Sample Co — Build a Business You Can Sell</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -630,12 +630,12 @@
 
       <!-- CTA block -->
       <div class="email-capture" style="margin-top:1.5rem;">
-        <div class="ec-title">Get your free report</div>
-        <div class="ec-sub">We will send you a personalised overview of what a marketplace could look like for your business, based on your results.</div>
+        <div class="ec-title">Request your free Divorce Mediation Checklist</div>
+        <div class="ec-sub">A checklist of next steps to begin the mediation process.</div>
         <div id="ec-success" style="display:none;color:#6bcf9a;font-size:13px;margin-bottom:12px;">Done — check your inbox. We will follow up within one business day.</div>
         <div id="ec-error" style="display:none;color:#f09595;font-size:13px;margin-bottom:12px;">Something went wrong — please try again.</div>
         <div id="ec-form-row">
-          <button class="ec-btn" id="ec-btn" onclick="submitResults()">Send my results →</button>
+          <button class="ec-btn" id="ec-btn" onclick="submitResults()">Submit →</button>
         </div>
       </div></div>
 
@@ -717,28 +717,28 @@ function qBack() { if (cur>0) { cur--; qRender(); } }
 function qShowResult() {
   const total = ans.reduce((s,a,i) => s + (a!==null ? Qs[i].opts[a].s : 0), 0);
   const dims = [
-    { l:'Financial readiness', s:(Qs[0].opts[ans[0]]?.s||0)+(Qs[1].opts[ans[1]]?.s||0), max:6 },
-    { l:'IP & brand strength',  s:(Qs[2].opts[ans[2]]?.s||0)+(Qs[3].opts[ans[3]]?.s||0), max:6 },
-    { l:'Market demand',        s:(Qs[4].opts[ans[4]]?.s||0)+(Qs[5].opts[ans[5]]?.s||0), max:6 },
-    { l:'Execution readiness',  s:(Qs[6].opts[ans[6]]?.s||0)+(Qs[7].opts[ans[7]]?.s||0), max:6 },
+    { l:'Journey stage',     s:(Qs[0].opts[ans[0]]?.s||0)+(Qs[1].opts[ans[1]]?.s||0), max:6 },
+    { l:'Household support', s:(Qs[2].opts[ans[2]]?.s||0)+(Qs[3].opts[ans[3]]?.s||0), max:6 },
+    { l:'Desired timeline',  s:(Qs[4].opts[ans[4]]?.s||0)+(Qs[5].opts[ans[5]]?.s||0), max:6 },
+    { l:'Next steps',        s:(Qs[6].opts[ans[6]]?.s||0)+(Qs[7].opts[ans[7]]?.s||0), max:6 },
   ];
   let tier, cls, desc, steps;
   if (total>=18) {
-    tier='Tier 3 — Scale'; cls='rt-scale';
-    desc="You are strong across all four dimensions. Ready for a full platform engagement — the conversation starts with a retainer.";
-    steps=["Book a 90-minute discovery workshop","Receive a Marketplace Configuration Document","Explore the Scale tier ($100k-$150k/year retainer)","Have Pleaides AI recruit my first seller cohort"];
+    tier='Divorce Mediation Ready'; cls='rt-scale';
+    desc="You are clear on your goals and ready to move forward. Mediation is well-suited to your situation — let's take next steps to begin building your path forward.";
+    steps=["Please send me your Guide to Mediation","Receive a personalized divorce mediation roadmap","Invite your spouse to a joint introductory session","Schedule an intake consultation with a mediator"];
   } else if (total>=12) {
-    tier='Tier 2 — Build'; cls='rt-build';
-    desc="You have solid fundamentals with one or two gaps. Ready for a focused full-funnel build anchored on time to market.";
-    steps=["Book a 2-hour discovery call","See a live Sharetribe prototype","Get a full platform build proposal","Discuss which modules to activate first"];
+    tier='Considering Mediation'; cls='rt-build';
+    desc="You have a solid foundation and a clear interest in an amicable process. A guided introduction will help you understand what mediation looks like for your specific family situation.";
+    steps=["Book a 30-minute discovery call","Receive an overview of the mediation process","Receive a divorce mediation checklist","Discuss whether your spouse is open to mediation"];
   } else if (total>=6) {
-    tier='Tier 1 — Launch'; cls='rt-launch';
-    desc="You have a good foundation but need validation first. We start with a low-risk discovery sprint and a working prototype.";
-    steps=["Book a paid discovery sprint ($2k-$5k)","See a Sharetribe prototype before committing","Get a Launch tier proposal ($15k-$25k)","Understand the milestone-based approach"];
+    tier='Exploring Options'; cls='rt-launch';
+    desc="You are early in the journey and weighing your options. We can help you understand whether divorce mediation is the right fit.";
+    steps=["Read our guide: Is mediation right for us?","Watch a short video on how mediation works","Receive resources on talking with your spouse","Set a follow-up for when you are ready to talk"];
   } else {
-    tier='Not ready yet — nurture'; cls='rt-nurture';
-    desc="The timing is not quite right yet. Stay in touch and revisit in 6-12 months.";
-    steps=["Join the Pleaides AI quarterly insight series","Receive a relevant client case study","Get advice on building demand first","Set a follow-up for when ready"];
+    tier='Just Researching'; cls='rt-nurture';
+    desc="You are gathering information. That is a wise first step. Stay connected and we will share resources to help you understand your options when the time is right.";
+    steps=["Subscribe to our quarterly family resource newsletter","Receive a free guide on the divorce process","Get connected to support resources (counseling, financial)","Reach out anytime — we are here when you are ready"];
   }
 
   currentSteps = steps;
@@ -807,15 +807,15 @@ async function submitResults() {
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name, email, _replyto: email,
-        _subject:            'New Pleaides AI lead — ' + tier + ' (' + name + ')',
+        _subject:            'New OnDeck Family Mediation lead — ' + tier + ' (' + name + ')',
         tier,
         total_score:         currentTotal + ' / 24',
-        financial_readiness: currentDims[0] ? currentDims[0].s + ' / 6' : '',
-        ip_brand_strength:   currentDims[1] ? currentDims[1].s + ' / 6' : '',
-        market_demand:       currentDims[2] ? currentDims[2].s + ' / 6' : '',
-        execution_readiness: currentDims[3] ? currentDims[3].s + ' / 6' : '',
+        readiness_and_intent:    currentDims[0] ? currentDims[0].s + ' / 6' : '',
+        family_situation:        currentDims[1] ? currentDims[1].s + ' / 6' : '',
+        vision_for_the_future:   currentDims[2] ? currentDims[2].s + ' / 6' : '',
+        engagement_readiness:    currentDims[3] ? currentDims[3].s + ' / 6' : '',
         selected_steps:      chosen,
-        source:              'Pleaides AI qualifier'
+        source:              'OnDeck Family Mediation assessment'
       })
     });
     if (res.ok) { success.style.display='block'; btn.textContent='Sent'; }
@@ -832,7 +832,7 @@ function qRestart() {
   document.getElementById('gate-email').value='';
   document.getElementById('ec-success').style.display='none';
   document.getElementById('ec-error').style.display='none';
-  document.getElementById('ec-btn').textContent='Send my results';
+  document.getElementById('ec-btn').textContent='Submit';
   document.getElementById('ec-btn').disabled=false;
   document.getElementById('qualifier').scrollIntoView({ behavior:'smooth' });
 }
