@@ -637,7 +637,7 @@
         <div id="ec-form-row">
           <button class="ec-btn" id="ec-btn" onclick="submitResults()">Submit →</button>
         </div>
-      </div></div>
+      </div>
 
       <button class="restart-link" onclick="qRestart()">Start over with different answers</button>
     </div>
@@ -821,7 +821,6 @@ async function submitResults() {
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name, email, _replyto: email,
-        _subject:        'New OnDeck Family Mediation lead — ' + tier + ' (' + name + ')',
         tier,
         total_score:     currentTotal + ' / 24',
         ...answersPayload,
@@ -830,8 +829,17 @@ async function submitResults() {
       })
     });
     if (res.ok) { success.style.display='block'; btn.textContent='Sent'; }
-    else { error.style.display='block'; btn.textContent='Try again'; btn.disabled=false; }
-  } catch(e) { error.style.display='block'; btn.textContent='Try again'; btn.disabled=false; }
+    else {
+      const errBody = await res.text().catch(() => '');
+      console.error('Formspree submit failed:', res.status, errBody);
+      error.textContent = 'Submission failed (status ' + res.status + '). Please try again or contact support.';
+      error.style.display='block'; btn.textContent='Try again'; btn.disabled=false;
+    }
+  } catch(e) {
+    console.error('Formspree submit exception:', e);
+    error.textContent = 'Network error: ' + (e && e.message ? e.message : 'unknown');
+    error.style.display='block'; btn.textContent='Try again'; btn.disabled=false;
+  }
 }
 
 function qRestart() {
