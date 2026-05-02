@@ -749,9 +749,13 @@ function qShowResult() {
   document.getElementById('quiz-view').style.display = 'none';
   document.getElementById('result-view').classList.add('visible');
 
+  // Pull the name they entered for personalization on the result screen
+  const respondentName = document.getElementById('gate-name').value.trim();
+  const firstName = respondentName ? respondentName.split(/\s+/)[0] : '';
+
   document.getElementById('rt-tier').innerHTML = `
     <div class="result-tier ${cls}">
-      <div class="rt-label">Your result</div>
+      <div class="rt-label">${firstName ? firstName + "'s result" : 'Your result'}</div>
       <div class="rt-title">${tier}</div>
       <div class="rt-desc">${desc}</div>
       <div class="rt-score">Score: ${total} / 24</div>
@@ -801,23 +805,15 @@ async function submitResults() {
   btn.textContent = 'Sending...'; btn.disabled = true;
   error.style.display = 'none'; success.style.display = 'none';
 
-  // Build per-question fields so the admin email shows the actual answers.
-  // Use zero-padded prefixes so Formspree's alphabetical ordering preserves question order.
+  // One column per question, just the answer text — no question, no embedded score.
+  // Numeric prefix keeps the column order intact in Formspree's alphabetical export.
   const answersPayload = {};
   Qs.forEach((q, i) => {
     const idx = ans[i];
     const answerText = (idx !== null && q.opts[idx]) ? q.opts[idx].t : '(not answered)';
-    const score      = (idx !== null && q.opts[idx]) ? q.opts[idx].s : 0;
     const key = 'q' + String(i + 1).padStart(2, '0') + '_' + q.dim.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    answersPayload[key] = q.text + '  →  ' + answerText + '  (score: ' + score + '/3)';
+    answersPayload[key] = answerText;
   });
-
-  // Build a single readable summary block too — easy to skim at the top of the email.
-  const summary = Qs.map((q, i) => {
-    const idx = ans[i];
-    const answerText = (idx !== null && q.opts[idx]) ? q.opts[idx].t : '(not answered)';
-    return (i + 1) + '. ' + q.dim + ' — ' + q.text + '\n   Answer: ' + answerText;
-  }).join('\n\n');
 
   try {
     const res = await fetch('https://formspree.io/f/mgodvoyq', {
@@ -825,17 +821,12 @@ async function submitResults() {
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name, email, _replyto: email,
-        _subject:               'New OnDeck Family Mediation lead — ' + tier + ' (' + name + ')',
-        a_tier:                 tier,
-        a_total_score:          currentTotal + ' / 24',
-        a_summary_of_answers:   summary,
-        b_journey_stage:        currentDims[0] ? currentDims[0].s + ' / 6' : '',
-        b_resources_needed:     currentDims[1] ? currentDims[1].s + ' / 6' : '',
-        b_desired_timeline:     currentDims[2] ? currentDims[2].s + ' / 6' : '',
-        b_ondeck_readiness:     currentDims[3] ? currentDims[3].s + ' / 6' : '',
-        c_selected_next_steps:  chosen,
+        _subject:        'New OnDeck Family Mediation lead — ' + tier + ' (' + name + ')',
+        tier,
+        total_score:     currentTotal + ' / 24',
         ...answersPayload,
-        z_source:               'OnDeck Family Mediation assessment'
+        next_steps_chosen: chosen,
+        source:          'OnDeck Family Mediation assessment'
       })
     });
     if (res.ok) { success.style.display='block'; btn.textContent='Sent'; }
