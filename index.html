@@ -624,10 +624,6 @@
       <div id="rt-tier"></div>
       <div class="score-grid" id="rt-scores"></div>
 
-      <p style="font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;">Which next step interests you most?</p>
-      <p style="font-size:13px;color:var(--ink-faint);margin-bottom:14px;">Select all that apply — we'll tailor our follow-up to what matters to you.</p>
-      <div id="rt-steps"></div>
-
       <!-- CTA block -->
       <div class="email-capture" style="margin-top:1.5rem;">
         <div class="ec-title">Request your free Divorce Mediation Checklist</div>
@@ -767,12 +763,6 @@ function qShowResult() {
       <div class="sc-bar"><div class="sc-fill" style="width:${Math.round(d.s/d.max*100)}%"></div></div>
       <div class="sc-val">${d.s} / ${d.max}</div>
     </div>`).join('');
-
-  document.getElementById('rt-steps').innerHTML = steps.map((s,i) => `
-    <button id="step-${i}" onclick="toggleStep(${i})" style="display:flex;width:100%;text-align:left;gap:12px;align-items:center;padding:14px 16px;background:var(--cream);border:1px solid var(--rule);border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14px;color:var(--ink-light);font-weight:300;line-height:1.5;font-family:'DM Sans',sans-serif;transition:all .15s;">
-      <div id="step-n-${i}" style="width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--cream);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div>
-      <div>${s}</div>
-    </button>`).join('');
 
   document.getElementById('result-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
