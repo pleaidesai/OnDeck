@@ -1017,6 +1017,42 @@ textarea.field-value.editable{resize:vertical;min-height:80px;}
   </div>
 </div>
 
+<!-- Invite Family Member overlay (respondent-side, invite-only) -->
+<div class="booking-overlay" id="invite-family-member-overlay" onclick="closeInviteFamilyMemberModal(event)">
+  <div class="booking-card" onclick="event.stopPropagation()" style="width:440px;">
+    <div class="booking-title">Invite family member</div>
+    <div class="booking-sub">Send an email invitation to a family member. They'll be added once they complete the assessment.</div>
+
+    <label class="booking-label">Their email</label>
+    <input type="email" class="booking-input" id="ifm-email" placeholder="e.g. partner@email.com" />
+
+    <label class="booking-label">Their name</label>
+    <input type="text" class="booking-input" id="ifm-name" placeholder="e.g. Susan Lee" />
+
+    <label class="booking-label">Family role</label>
+    <select class="booking-input" id="ifm-role">
+      <option value="Mother">Mother</option>
+      <option value="Father">Father</option>
+      <option value="Spouse">Spouse</option>
+      <option value="Partner">Partner</option>
+      <option value="Child">Child</option>
+      <option value="Adult Child">Adult Child</option>
+      <option value="Guardian">Guardian</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label class="booking-label">Personal message (optional)</label>
+    <textarea class="booking-input" id="ifm-message" rows="3" placeholder="Add a short note to the invitation..." style="font-family:'DM Sans',sans-serif;resize:vertical;"></textarea>
+
+    <div id="ifm-error" style="display:none;color:#c84b2f;font-size:12px;margin-bottom:8px;">Please fill in name, email, and role.</div>
+    <div id="ifm-success" style="display:none;color:#1a6b4a;font-size:13px;margin-bottom:8px;">Invitation sent. They'll appear in your group once added by Admin.</div>
+    <div class="booking-actions">
+      <button class="booking-cancel" onclick="closeInviteFamilyMemberModalDirect()">Cancel</button>
+      <button class="booking-confirm" onclick="confirmInviteFamilyMember()">Send invitation</button>
+    </div>
+  </div>
+</div>
+
 <!-- Add Service Provider To Group overlay -->
 <div class="booking-overlay" id="add-provider-to-group-overlay" onclick="closeAddProviderToGroupModal(event)">
   <div class="booking-card" onclick="event.stopPropagation()" style="width:440px;">
@@ -1567,7 +1603,7 @@ function buildRespondentDashboard() {
         <div style="font-size:12px;font-weight:500;color:var(--ink);margin-bottom:8px;">Family Admin members <span style="font-size:11px;color:var(--ink-faint);font-weight:400;">(family group access)</span></div>
         <div class="people-grid" id="partner-list"></div>
         <div class="add-person-row">
-          <button class="add-person-btn" onclick="openAddFamilyMemberFromDashboard()">+ Add family member</button>
+          <button class="add-person-btn" onclick="openInviteFamilyMemberModal()">+ Invite family member</button>
         </div>
       </div>
       <div class="section-divider"></div>
@@ -1575,6 +1611,9 @@ function buildRespondentDashboard() {
         <div style="font-size:12px;font-weight:500;color:var(--ink);margin-bottom:8px;">Invited OnDeck Family Mediation providers <span style="font-size:11px;color:var(--ink-faint);font-weight:400;">(see Marketplace to browse & invite)</span></div>
         <div class="people-grid" id="invited-providers-list"></div>
         <div id="no-providers-msg" class="empty-people">No providers invited yet. Browse the Marketplace and invite providers to your dashboard.</div>
+        <div class="add-person-row" style="margin-top:10px;">
+          <button class="add-person-btn" onclick="showPage('page-marketplace')">+ Invite service provider</button>
+        </div>
       </div>
     </div>`;
   afterProfileRender(respId, true);
@@ -2561,25 +2600,59 @@ function addPartner() {
   if (input) input.value = '';
 }
 
-// Helper: open the Add Family Member modal from Jordan's dashboard.
-// If Jordan doesn't yet have a group, prompt him to create one first.
-function openAddFamilyMemberFromDashboard() {
-  let myGroup = findGroup(1); // Jordan is profile id:1
-  if (!myGroup) {
-    const groupName = prompt('Name your family group (e.g. Lee Family):', 'My Family');
-    if (!groupName || !groupName.trim()) return;
-    const newGroup = {
-      id: 'grp-' + Date.now(),
-      name: groupName.trim(),
-      createdBy: 'Jordan Lee',
-      createdRole: 'Respondent',
-      created: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
-      members: [{ profileId:1, name:'Jordan Lee', role:'Respondent', type:'family', initials:'JL', avClass:'av-respondent' }]
-    };
-    groups.push(newGroup);
-    myGroup = newGroup;
+// ── INVITE FAMILY MEMBER (respondent-side, invite-only) ──
+// Respondents can only INVITE family members by email. They cannot pick from
+// the existing respondent list (which would expose other families' data).
+// Only the Admin can actually add a person to a group.
+function openInviteFamilyMemberModal() {
+  const overlay = document.getElementById('invite-family-member-overlay');
+  if (!overlay) return;
+  ['ifm-email','ifm-name','ifm-message'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('ifm-role').value = 'Mother';
+  document.getElementById('ifm-error').style.display = 'none';
+  document.getElementById('ifm-success').style.display = 'none';
+  overlay.classList.add('open');
+}
+
+function closeInviteFamilyMemberModal(event) {
+  if (event && event.target.id !== 'invite-family-member-overlay') return;
+  document.getElementById('invite-family-member-overlay').classList.remove('open');
+}
+
+function closeInviteFamilyMemberModalDirect() {
+  document.getElementById('invite-family-member-overlay').classList.remove('open');
+}
+
+function confirmInviteFamilyMember() {
+  const email = document.getElementById('ifm-email').value.trim();
+  const name  = document.getElementById('ifm-name').value.trim();
+  const role  = document.getElementById('ifm-role').value;
+  const errEl = document.getElementById('ifm-error');
+  const okEl  = document.getElementById('ifm-success');
+
+  if (!email || !name || !role) {
+    errEl.textContent = 'Please fill in name, email, and role.';
+    errEl.style.display = 'block';
+    return;
   }
-  openAddFamilyMemberModal(myGroup.id);
+  if (!email.includes('@')) {
+    errEl.textContent = 'Please enter a valid email.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  // Log the invite as activity on Jordan's profile (id 1)
+  if (typeof logActivity === 'function') {
+    logActivity(1, 'edit', currentUserName(), currentUserRole(), 'Invited ' + name + ' (' + role + ') — ' + email);
+    if (typeof renderActivity === 'function') renderActivity(1);
+  }
+
+  okEl.textContent = 'Invitation sent to ' + email + '. They will appear in your group once Admin completes their profile.';
+  okEl.style.display = 'block';
+  setTimeout(() => closeInviteFamilyMemberModalDirect(), 2000);
 }
 
 function removePartner(i) {
@@ -3175,7 +3248,7 @@ function buildMyGroup() {
     '<div class="table-card" style="margin-bottom:1rem;">' +
       '<div class="table-header">' +
         '<span class="table-title">Group members</span>' +
-        '<button class="create-group-btn" style="font-size:12px;padding:7px 14px;" onclick="openAddFamilyMemberModal(\'' + myGroup.id + '\')">+ Add family member</button>' +
+        '<button class="create-group-btn" style="font-size:12px;padding:7px 14px;" onclick="openInviteFamilyMemberModal()">+ Invite family member</button>' +
       '</div>' +
       '<table>' +
         '<thead><tr><th>Name</th><th>Role</th><th>Type</th><th>Tier</th><th>Score</th><th></th></tr></thead>' +
