@@ -793,29 +793,31 @@ function toggleStep(i) {
 }
 
 async function submitResults() {
-  const btn    = document.getElementById('ec-btn');
-  const success= document.getElementById('ec-success');
-  const error  = document.getElementById('ec-error');
-  const name   = document.getElementById('gate-name').value.trim();
-  const email  = document.getElementById('gate-email').value.trim();
-  const tierEl = document.querySelector('.rt-title');
-  const tier   = tierEl ? tierEl.textContent.trim() : 'Unknown';
-  const chosen = selectedSteps.length > 0 ? selectedSteps.map(i => currentSteps[i]).join(' | ') : 'None selected';
-
-  btn.textContent = 'Sending...'; btn.disabled = true;
-  error.style.display = 'none'; success.style.display = 'none';
-
-  // One column per question, just the answer text — no question, no embedded score.
-  // Numeric prefix keeps the column order intact in Formspree's alphabetical export.
-  const answersPayload = {};
-  Qs.forEach((q, i) => {
-    const idx = ans[i];
-    const answerText = (idx !== null && q.opts[idx]) ? q.opts[idx].t : '(not answered)';
-    const key = 'q' + String(i + 1).padStart(2, '0') + '_' + q.dim.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    answersPayload[key] = answerText;
-  });
-
+  console.log('[submitResults] function called');
   try {
+    const btn    = document.getElementById('ec-btn');
+    const success= document.getElementById('ec-success');
+    const error  = document.getElementById('ec-error');
+    const name   = document.getElementById('gate-name').value.trim();
+    const email  = document.getElementById('gate-email').value.trim();
+    const tierEl = document.querySelector('.rt-title');
+    const tier   = tierEl ? tierEl.textContent.trim() : 'Unknown';
+    const chosen = selectedSteps.length > 0 ? selectedSteps.map(i => currentSteps[i]).join(' | ') : 'None selected';
+    console.log('[submitResults] data ready', { name, email, tier, chosen });
+
+    btn.textContent = 'Sending...'; btn.disabled = true;
+    error.style.display = 'none'; success.style.display = 'none';
+
+    // One column per question, just the answer text — no question, no embedded score.
+    const answersPayload = {};
+    Qs.forEach((q, i) => {
+      const idx = ans[i];
+      const answerText = (idx !== null && q.opts[idx]) ? q.opts[idx].t : '(not answered)';
+      const key = 'q' + String(i + 1).padStart(2, '0') + '_' + q.dim.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      answersPayload[key] = answerText;
+    });
+
+    console.log('[submitResults] sending fetch to formspree...');
     const res = await fetch('https://formspree.io/f/mgodvoyq', {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -828,6 +830,7 @@ async function submitResults() {
         source:          'OnDeck Family Mediation assessment'
       })
     });
+    console.log('[submitResults] fetch returned, status:', res.status, 'ok:', res.ok);
     if (res.ok) { success.style.display='block'; btn.textContent='Sent'; }
     else {
       const errBody = await res.text().catch(() => '');
@@ -836,9 +839,15 @@ async function submitResults() {
       error.style.display='block'; btn.textContent='Try again'; btn.disabled=false;
     }
   } catch(e) {
-    console.error('Formspree submit exception:', e);
-    error.textContent = 'Network error: ' + (e && e.message ? e.message : 'unknown');
-    error.style.display='block'; btn.textContent='Try again'; btn.disabled=false;
+    console.error('[submitResults] EXCEPTION:', e);
+    alert('Submission error: ' + (e && e.message ? e.message : String(e)));
+    const btn = document.getElementById('ec-btn');
+    const error = document.getElementById('ec-error');
+    if (error) {
+      error.textContent = 'Error: ' + (e && e.message ? e.message : 'unknown');
+      error.style.display = 'block';
+    }
+    if (btn) { btn.textContent = 'Try again'; btn.disabled = false; }
   }
 }
 
