@@ -1159,9 +1159,7 @@ const partnerProfiles = [
     familyGoal: '',
     selectedSteps: '',
     notes: '', submitted: 'May 1, 2026',
-    dims: (typeof QUALIFIER_QUESTIONS !== 'undefined')
-      ? QUALIFIER_QUESTIONS.map(q => ({ l:q.dim, s:0, max:q.opts.reduce((m,o)=>Math.max(m,o.s),0) }))
-      : [{l:'Divorce journey',s:0,max:3},{l:'Mediation interest',s:0,max:3},{l:'Family profile',s:0,max:2},{l:'Earning structure',s:0,max:3},{l:'Timeline',s:0,max:3},{l:'Post-divorce support',s:0,max:3},{l:'Additional resources',s:0,max:2},{l:'Next steps',s:0,max:3}],
+    dims: [{l:'Divorce journey',s:0,max:3},{l:'Mediation interest',s:0,max:3},{l:'Family profile',s:0,max:2},{l:'Earning structure',s:0,max:3},{l:'Timeline',s:0,max:3},{l:'Post-divorce support',s:0,max:3},{l:'Additional resources',s:0,max:2},{l:'Next steps',s:0,max:3}],
     qa:[
       { dim:'Divorce journey',     questions:[{ q:'What stage are you in your divorce journey?', a:'(not yet recorded)', score:0 }]},
       { dim:'Mediation interest',  questions:[{ q:'What is your interest in mediation?', a:'(not yet recorded)', score:0 }]},
