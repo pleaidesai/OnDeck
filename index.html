@@ -718,9 +718,9 @@ function qShowResult() {
   const total = ans.reduce((s,a,i) => s + (a!==null ? Qs[i].opts[a].s : 0), 0);
   const dims = [
     { l:'Journey stage',     s:(Qs[0].opts[ans[0]]?.s||0)+(Qs[1].opts[ans[1]]?.s||0), max:6 },
-    { l:'Household support', s:(Qs[2].opts[ans[2]]?.s||0)+(Qs[3].opts[ans[3]]?.s||0), max:6 },
+    { l:'Resources needed',  s:(Qs[2].opts[ans[2]]?.s||0)+(Qs[3].opts[ans[3]]?.s||0), max:6 },
     { l:'Desired timeline',  s:(Qs[4].opts[ans[4]]?.s||0)+(Qs[5].opts[ans[5]]?.s||0), max:6 },
-    { l:'Next steps',        s:(Qs[6].opts[ans[6]]?.s||0)+(Qs[7].opts[ans[7]]?.s||0), max:6 },
+    { l:'OnDeck readiness',  s:(Qs[6].opts[ans[6]]?.s||0)+(Qs[7].opts[ans[7]]?.s||0), max:6 },
   ];
   let tier, cls, desc, steps;
   if (total>=18) {
@@ -810,10 +810,10 @@ async function submitResults() {
         _subject:            'New OnDeck Family Mediation lead — ' + tier + ' (' + name + ')',
         tier,
         total_score:         currentTotal + ' / 24',
-        readiness_and_intent:    currentDims[0] ? currentDims[0].s + ' / 6' : '',
-        family_situation:        currentDims[1] ? currentDims[1].s + ' / 6' : '',
-        vision_for_the_future:   currentDims[2] ? currentDims[2].s + ' / 6' : '',
-        engagement_readiness:    currentDims[3] ? currentDims[3].s + ' / 6' : '',
+        journey_stage:       currentDims[0] ? currentDims[0].s + ' / 6' : '',
+        resources_needed:    currentDims[1] ? currentDims[1].s + ' / 6' : '',
+        desired_timeline:    currentDims[2] ? currentDims[2].s + ' / 6' : '',
+        ondeck_readiness:    currentDims[3] ? currentDims[3].s + ' / 6' : '',
         selected_steps:      chosen,
         source:              'OnDeck Family Mediation assessment'
       })
@@ -846,9 +846,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Persona card tap-to-flip (mobile + desktop)
+// Tapping a card flips it and unflips any others, so scrolling to a new card resets the previous one.
 document.querySelectorAll('.persona-card').forEach(card => {
   card.addEventListener('click', () => {
-    card.classList.toggle('flipped');
+    const wasFlipped = card.classList.contains('flipped');
+    document.querySelectorAll('.persona-card.flipped').forEach(c => c.classList.remove('flipped'));
+    if (!wasFlipped) card.classList.add('flipped');
   });
 });
 
