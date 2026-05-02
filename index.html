@@ -801,21 +801,41 @@ async function submitResults() {
   btn.textContent = 'Sending...'; btn.disabled = true;
   error.style.display = 'none'; success.style.display = 'none';
 
+  // Build per-question fields so the admin email shows the actual answers.
+  // Use zero-padded prefixes so Formspree's alphabetical ordering preserves question order.
+  const answersPayload = {};
+  Qs.forEach((q, i) => {
+    const idx = ans[i];
+    const answerText = (idx !== null && q.opts[idx]) ? q.opts[idx].t : '(not answered)';
+    const score      = (idx !== null && q.opts[idx]) ? q.opts[idx].s : 0;
+    const key = 'q' + String(i + 1).padStart(2, '0') + '_' + q.dim.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    answersPayload[key] = q.text + '  →  ' + answerText + '  (score: ' + score + '/3)';
+  });
+
+  // Build a single readable summary block too — easy to skim at the top of the email.
+  const summary = Qs.map((q, i) => {
+    const idx = ans[i];
+    const answerText = (idx !== null && q.opts[idx]) ? q.opts[idx].t : '(not answered)';
+    return (i + 1) + '. ' + q.dim + ' — ' + q.text + '\n   Answer: ' + answerText;
+  }).join('\n\n');
+
   try {
     const res = await fetch('https://formspree.io/f/mgodvoyq', {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name, email, _replyto: email,
-        _subject:            'New OnDeck Family Mediation lead — ' + tier + ' (' + name + ')',
-        tier,
-        total_score:         currentTotal + ' / 24',
-        journey_stage:       currentDims[0] ? currentDims[0].s + ' / 6' : '',
-        resources_needed:    currentDims[1] ? currentDims[1].s + ' / 6' : '',
-        desired_timeline:    currentDims[2] ? currentDims[2].s + ' / 6' : '',
-        ondeck_readiness:    currentDims[3] ? currentDims[3].s + ' / 6' : '',
-        selected_steps:      chosen,
-        source:              'OnDeck Family Mediation assessment'
+        _subject:               'New OnDeck Family Mediation lead — ' + tier + ' (' + name + ')',
+        a_tier:                 tier,
+        a_total_score:          currentTotal + ' / 24',
+        a_summary_of_answers:   summary,
+        b_journey_stage:        currentDims[0] ? currentDims[0].s + ' / 6' : '',
+        b_resources_needed:     currentDims[1] ? currentDims[1].s + ' / 6' : '',
+        b_desired_timeline:     currentDims[2] ? currentDims[2].s + ' / 6' : '',
+        b_ondeck_readiness:     currentDims[3] ? currentDims[3].s + ' / 6' : '',
+        c_selected_next_steps:  chosen,
+        ...answersPayload,
+        z_source:               'OnDeck Family Mediation assessment'
       })
     });
     if (res.ok) { success.style.display='block'; btn.textContent='Sent'; }
