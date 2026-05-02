@@ -1612,6 +1612,37 @@ function renderStatusPills(profileId) {
     '<button class="status-pill-btn' + (current === s.key ? ' ' + s.cls : '') + '" onclick="setStatus(' + profileId + ',\'' + s.key + '\')"> ' + s.label + '</button>'
   ).join('');
 }
+
+// ── DIVORCE JOURNEY STAGE TRACKER ──
+// Tracks where each family is in their divorce journey. Siena can update as they progress.
+// Default for the original Jordan Lee demo profile is 'active' to match the seeded data.
+const journeyStageStore = {1: 'active'};
+
+const JOURNEY_STAGES = [
+  { key:'researching',  label:'Just researching' },
+  { key:'decided',      label:'Decided to divorce' },
+  { key:'separated',    label:'Currently separated' },
+  { key:'active',       label:'Actively mediating' },
+  { key:'agreement',    label:'Agreement reached' },
+  { key:'post',         label:'Post-divorce support' },
+];
+
+function setJourneyStage(profileId, key) {
+  journeyStageStore[profileId] = key;
+  renderJourneyStage(profileId);
+}
+
+function renderJourneyStage(profileId) {
+  const el = document.getElementById('journey-stage-' + profileId);
+  if (!el) return;
+  const current = journeyStageStore[profileId] || 'researching';
+  el.innerHTML = JOURNEY_STAGES.map((s, i) =>
+    '<button class="status-pill-btn' + (current === s.key ? ' active-prospect' : '') +
+    '" onclick="setJourneyStage(' + profileId + ',\'' + s.key + '\')">' +
+    (i + 1) + '. ' + s.label +
+    '</button>'
+  ).join('');
+}
 const STEP_OPTIONS = [
   'Add to newsletter subscriber list',
   'Send OnDeck mediation educational materials',
@@ -1665,16 +1696,23 @@ function onStepCheckbox(profileId, cb) {
 }
 
 function initProfile(id, submittedBy, submittedAt) {
-  if (!docStore[id]) docStore[id] = [
-    { id:1, name:'Mediation Contract.pdf',   type:'Mediation Contract', size:'1.2 MB', uploader:'Jordan Lee',       role:'Respondent',  date:'Apr 7, 2026', time:'8:42 PM' },
-    { id:2, name:'Alice Lee IEP.pdf',         type:'IEP / Education', size:'340 KB', uploader:'Siena Deck', role:'Admin',       date:'Apr 8, 2026', time:'10:15 AM' },
-  ];
-  if (!activityLog[id]) activityLog[id] = [
-    { type:'submit', who:'Jordan Lee',       role:'Respondent', what:'Submitted the qualifier',             date:'Apr 7, 2026', time:'8:42 PM' },
-    { type:'upload', who:'Jordan Lee',       role:'Respondent', what:'Uploaded Mediation Contract.pdf',     date:'Apr 7, 2026', time:'8:43 PM' },
-    { type:'upload', who:'Siena Deck', role:'Admin',      what:'Uploaded Alice Lee IEP.pdf',          date:'Apr 8, 2026', time:'10:15 AM' },
-    { type:'edit',   who:'Jordan Lee',       role:'Respondent', what:'Updated family goal',               date:'Apr 9, 2026', time:'2:30 PM' },
-  ];
+  // Only seed the original Jordan Lee demo profile (id 1) with sample docs/activity.
+  // All other profiles — including newly added respondents — start with empty stores
+  // to avoid leaking documents or activity from another family.
+  if (!docStore[id]) {
+    docStore[id] = (id === 1) ? [
+      { id:1, name:'Mediation Contract.pdf',   type:'Mediation Contract', size:'1.2 MB', uploader:'Jordan Lee',       role:'Respondent',  date:'Apr 7, 2026', time:'8:42 PM' },
+      { id:2, name:'Alice Lee IEP.pdf',         type:'IEP / Education', size:'340 KB', uploader:'Siena Deck', role:'Admin',       date:'Apr 8, 2026', time:'10:15 AM' },
+    ] : [];
+  }
+  if (!activityLog[id]) {
+    activityLog[id] = (id === 1) ? [
+      { type:'submit', who:'Jordan Lee',       role:'Respondent', what:'Submitted the qualifier',             date:'Apr 7, 2026', time:'8:42 PM' },
+      { type:'upload', who:'Jordan Lee',       role:'Respondent', what:'Uploaded Mediation Contract.pdf',     date:'Apr 7, 2026', time:'8:43 PM' },
+      { type:'upload', who:'Siena Deck', role:'Admin',      what:'Uploaded Alice Lee IEP.pdf',          date:'Apr 8, 2026', time:'10:15 AM' },
+      { type:'edit',   who:'Jordan Lee',       role:'Respondent', what:'Updated family goal',               date:'Apr 9, 2026', time:'2:30 PM' },
+    ] : [];
+  }
 }
 
 function logActivity(profileId, type, who, role, what) {
@@ -2226,6 +2264,11 @@ function buildProfileHTML(s, editable) {
       '<div class="field-row single"><div>' +
         '<div class="field-label">Status</div>' +
         '<div class="status-pill-selector" id="status-pills-' + s.id + '"></div>' +
+      '</div></div>' +
+      '<div class="field-row single"><div>' +
+        '<div class="field-label">Divorce Journey Stage</div>' +
+        '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:8px;">Update as the family progresses through their divorce journey</div>' +
+        '<div class="status-pill-selector" id="journey-stage-' + s.id + '"></div>' +
       '</div></div>' +
       '<div class="field-row single"><div>' +
         '<div class="sched-section">' +
@@ -2947,6 +2990,7 @@ function saveProfile(profileId) {
 // Re-render docs, notes, next steps and activity after profile HTML is inserted into DOM
 function afterProfileRender(profileId, editable) {
   renderStatusPills(profileId);
+  renderJourneyStage(profileId);
   renderParentingSchedule(profileId);
   renderDocs(profileId);
   renderActivity(profileId);
