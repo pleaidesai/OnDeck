@@ -1406,7 +1406,12 @@ function showPage(id) {
 function buildAdminTable() {
   const tbody = document.getElementById('admin-table-body');
   const allProfiles = [...submissions, ...partnerProfiles];
-  tbody.innerHTML = allProfiles.map(s => `
+  tbody.innerHTML = allProfiles.map(s => {
+    // Compute the max possible total dynamically from this profile's dims, so that
+    // both seeded demo data (max 4 per dim) and new respondents (max 3 per dim,
+    // matching the actual survey) render with correct denominators.
+    const totalMax = (s.dims || []).reduce((sum, d) => sum + (d.max || 0), 0) || 24;
+    return `
     <tr style="cursor:pointer;" onclick="showAdminProfile(${s.id})">
       <td><div style="display:flex;align-items:center;gap:8px;">
         <div class="pill-avatar ${s.avClass}" style="width:28px;height:28px;font-size:10px;">${s.initials}</div>
@@ -1414,11 +1419,12 @@ function buildAdminTable() {
       </div></td>
       <td style="color:var(--ink-faint);">${s.email}</td>
       <td><span class="tier-pill ${s.tierClass}">${s.tier}</span></td>
-      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:${Math.round(s.score/32*100)}%"></div></div><span class="score-text">${s.score}/32</span></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:${Math.round(s.score/totalMax*100)}%"></div></div><span class="score-text">${s.score}/${totalMax}</span></div></td>
       ${s.dims.map(d => `<td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:${Math.round(d.s/d.max*100)}%"></div></div><span class="score-text">${d.s}/${d.max}</span></div></td>`).join('')}
       <td style="font-size:12px;color:var(--ink-faint);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.selectedSteps}</td>
       <td style="color:var(--ink-faint);">${s.submitted}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 // ── ADMIN PROFILE ──
@@ -1635,18 +1641,23 @@ function updateQualifierAnswer(profileId, dimIndex, answerText) {
   // Find the matching option to get its score
   const opt = qDef.opts.find(o => o.t === answerText);
   const score = opt ? opt.s : 0;
+  // Compute the maximum possible score for this question (highest option score)
+  const dimMax = qDef.opts.reduce((m, o) => Math.max(m, o.s), 0);
   // Update the qa entry (assumes one question per dim, matching the existing data shape)
   profile.qa[dimIndex].questions[0].a = answerText;
   profile.qa[dimIndex].questions[0].score = score;
-  // Update the dims score for the same dimension if it exists
+  // Update both score and max on the dims entry so the score bar renders correctly
   if (profile.dims && profile.dims[dimIndex]) {
-    profile.dims[dimIndex].s = score;
+    profile.dims[dimIndex].s   = score;
+    profile.dims[dimIndex].max = dimMax;
   }
   // Recompute total score
   profile.score = profile.qa.reduce((sum, d) => sum + d.questions.reduce((s,q) => s + (q.score || 0), 0), 0);
   // Re-render the profile so updated scores and totals show
   document.getElementById('admin-profile-content').innerHTML = buildProfileHTML(profile, true);
   afterProfileRender(profile.id, true);
+  // Rebuild the All Submissions table so the updated scores show there too
+  if (typeof buildAdminTable === 'function') buildAdminTable();
 }
 const STEP_OPTIONS = [
   'Add to newsletter subscriber list',
@@ -2632,8 +2643,11 @@ function confirmAddRespondent() {
   const parts = name.split(/\s+/);
   const initials = ((parts[0]||'')[0] + (parts[1]||'')[0] || (parts[0]||'??').slice(0,2)).toUpperCase();
 
-  // Build new submission
+  // Build new submission. Use the QUALIFIER_QUESTIONS definitions to derive
+  // each dimension's max score, so the score bars render correctly even before
+  // Siena fills in any answers (rather than showing /4 with no answers entered).
   const newId = Math.max(0, ...submissions.map(s => s.id), ...partnerProfiles.map(p => p.id)) + 1;
+  const dimMaxFor = (i) => QUALIFIER_QUESTIONS[i] ? QUALIFIER_QUESTIONS[i].opts.reduce((m, o) => Math.max(m, o.s), 0) : 4;
   const newSubmission = {
     id: newId,
     name,
@@ -2644,12 +2658,7 @@ function confirmAddRespondent() {
     tierClass: cls.tierClass,
     myTierClass: cls.myTierClass,
     score: isNaN(score) ? 0 : score,
-    dims: [
-      {l:'Divorce journey',s:0,max:4},{l:'Mediation interest',s:0,max:4},
-      {l:'Family profile',s:0,max:4},{l:'Earning structure',s:0,max:4},
-      {l:'Timeline',s:0,max:4},{l:'Post-divorce support',s:0,max:4},
-      {l:'Additional resources',s:0,max:4},{l:'Next steps',s:0,max:4}
-    ],
+    dims: QUALIFIER_QUESTIONS.map((q, i) => ({ l:q.dim, s:0, max:dimMaxFor(i) })),
     familyGoal: '',
     selectedSteps: '',
     notes: '',
@@ -2657,16 +2666,10 @@ function confirmAddRespondent() {
     initials,
     avClass: 'av-respondent',
     desc: '',
-    qa: [
-      { dim:'Divorce journey',     questions:[{ q:'What stage are you in your divorce journey?', a:'(not yet recorded)', score:0 }]},
-      { dim:'Mediation interest',  questions:[{ q:'What is your interest in mediation?', a:'(not yet recorded)', score:0 }]},
-      { dim:'Family profile',      questions:[{ q:'Tell us about your family:', a:'(not yet recorded)', score:0 }]},
-      { dim:'Earning structure',   questions:[{ q:"Describe your family's earning structure:", a:'(not yet recorded)', score:0 }]},
-      { dim:'Timeline',            questions:[{ q:'What is your desired timeline for divorce completion?', a:'(not yet recorded)', score:0 }]},
-      { dim:'Post-divorce support',questions:[{ q:'What value do you see in mediation post-divorce?', a:'(not yet recorded)', score:0 }]},
-      { dim:'Additional resources',questions:[{ q:'What additional non-legal resources might be helpful?', a:'(not yet recorded)', score:0 }]},
-      { dim:'Next steps',          questions:[{ q:'What would be helpful next steps?', a:'(not yet recorded)', score:0 }]}
-    ]
+    qa: QUALIFIER_QUESTIONS.map(q => ({
+      dim: q.dim,
+      questions: [{ q: q.q, a: '(not yet recorded)', score: 0 }]
+    }))
   };
   submissions.push(newSubmission);
 
